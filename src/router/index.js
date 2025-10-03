@@ -23,6 +23,11 @@ const routes = [
     component: () => import('../views/Preverbs.vue')
   },
   {
+    path: '/preverbs/:slug',
+    name: 'PreverbDetail',
+    component: () => import('../views/PreverbDetail.vue')
+  },
+  {
     path: '/about',
     name: 'About',
     component: () => import('../views/About.vue')
