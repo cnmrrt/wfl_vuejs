@@ -1,58 +1,55 @@
 <template>
   <main class="main" role="main">
     <h1>Words</h1>
-    <div class="home-container">
+    <div class="home-container words-container">
       <section class="section">
-        <div id="word-container">
-          <div 
-            v-for="item in wordsData" 
-            :key="item.id"
-            class="demo"
-          >
-            <a :href="`/words/${item.id}`">
-              <span>{{ item.word }}</span>
-              <p>{{ item.en_meta_desc }}</p>
-            </a>
-          </div>
-        </div>
+      <ul>
+        <li v-for="item in wordsData" :key="item.id">
+         
+            <a :href="`/words/${item.id}`">{{ item.word }}</a>
+
+        </li>
+      </ul>
       </section>
     </div>
   </main>
 </template>
 
 <script>
-import { ref, onMounted, nextTick } from 'vue'
-import Macy from 'macy'
+import { ref, onMounted, nextTick } from "vue";
+import Macy from "macy";
 
 export default {
-  name: 'Words',
+  name: "Words",
   setup() {
-    const wordsData = ref([])
-    const loading = ref(true)
-    let wordsMacyInstance = null
+    const wordsData = ref([]);
+    const loading = ref(true);
+    let wordsMacyInstance = null;
 
     const getWords = async () => {
       try {
-        const res = await fetch('https://words-from-life-5cb26-default-rtdb.firebaseio.com/words.json')
+        const res = await fetch(
+          "https://words-from-life-5cb26-default-rtdb.firebaseio.com/words.json"
+        );
         if (!res.ok) {
-          throw new Error('Failed to fetch words data')
+          throw new Error("Failed to fetch words data");
         }
-        return await res.json()
+        return await res.json();
       } catch (err) {
-        console.error('Error fetching words:', err)
-        throw err
+        console.error("Error fetching words:", err);
+        throw err;
       }
-    }
+    };
 
     // Initialize masonry layout for words
     const initWordsMasonry = () => {
       nextTick(() => {
         if (wordsMacyInstance) {
-          wordsMacyInstance.destroy()
+          wordsMacyInstance.destroy();
         }
-        
+
         wordsMacyInstance = new Macy({
-          container: '#word-container',
+          container: "#word-container",
           trueOrder: false,
           waitForImages: false,
           margin: 15,
@@ -60,34 +57,34 @@ export default {
           breakAt: {
             1200: 3,
             940: 2,
-            520: 1
-          }
-        })
-      })
-    }
+            520: 1,
+          },
+        });
+      });
+    };
 
     onMounted(async () => {
       try {
-        loading.value = true
-        const words = await getWords()
-        wordsData.value = words
-        
+        loading.value = true;
+        const words = await getWords();
+        wordsData.value = words;
+
         // Initialize masonry after data is loaded
-        initWordsMasonry()
+        initWordsMasonry();
       } catch (err) {
-        console.error('Error loading words:', err)
+        console.error("Error loading words:", err);
       } finally {
-        loading.value = false
+        loading.value = false;
       }
-    })
+    });
 
     return {
       wordsData,
       loading,
-      initWordsMasonry
-    }
-  }
-}
+      initWordsMasonry,
+    };
+  },
+};
 </script>
 
 <style scoped>
@@ -152,8 +149,8 @@ export default {
 
 @media (max-width: 767px) {
   .home-container {
-    max-width: 90%;
-    padding: 0 1rem;
+    max-width: 100%;
+    padding: 0;
   }
 }
 </style>

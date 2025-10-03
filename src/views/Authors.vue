@@ -63,12 +63,12 @@ export default {
           container: '#macy-container',
           trueOrder: false,
           waitForImages: false,
-          margin: 20,
-          columns: 4,
+          margin: 15,
+          columns: 6,
           breakAt: {
-            1200: 3,
-            940: 2,
-            520: 1
+            1200: 4,
+            940: 3,
+            520: 2
           }
         })
       })
@@ -117,7 +117,6 @@ export default {
 .demo {
   border: 2px solid #eee;
   margin: 10px;
-  padding: 10px;
   border-radius: 8px;
   transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -151,8 +150,8 @@ export default {
 
 @media (max-width: 767px) {
   .home-container {
-    max-width: 90%;
-    padding: 0 1rem;
+    max-width: 100;
+    padding: 0;
   }
 }
 </style>
