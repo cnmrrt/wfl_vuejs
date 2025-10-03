@@ -1,6 +1,6 @@
 <template>
   <main class="main" role="main">
-    <h1>Preverbs</h1>
+    <h1>Proverbs</h1>
     <div class="home-container">
       <section class="section">
         <div id="preverbs-container">

@@ -10,7 +10,7 @@
             v-show="item.en_quotes !== '' && item.img != null"
             class="demo"
           >
-            <a :href="`/authors/${item.id}-quotes`">
+            <router-link :to="`/authors/${item.id}-quotes`">
               <img
                 :src="item.img"
                 :alt="`${item.name} ${item.surname}`"
@@ -20,7 +20,7 @@
               <span style="display: block; text-align: center; padding: .2rem 0">
                 {{ item.name }} {{ item.surname }}
               </span>
-            </a>
+            </router-link>
           </div>
         </div>
       </section>
