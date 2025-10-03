@@ -21,13 +21,15 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
+import Macy from 'macy'
 
 export default {
   name: 'Words',
   setup() {
     const wordsData = ref([])
     const loading = ref(true)
+    let wordsMacyInstance = null
 
     const getWords = async () => {
       try {
@@ -42,11 +44,36 @@ export default {
       }
     }
 
+    // Initialize masonry layout for words
+    const initWordsMasonry = () => {
+      nextTick(() => {
+        if (wordsMacyInstance) {
+          wordsMacyInstance.destroy()
+        }
+        
+        wordsMacyInstance = new Macy({
+          container: '#word-container',
+          trueOrder: false,
+          waitForImages: false,
+          margin: 15,
+          columns: 4,
+          breakAt: {
+            1200: 3,
+            940: 2,
+            520: 1
+          }
+        })
+      })
+    }
+
     onMounted(async () => {
       try {
         loading.value = true
         const words = await getWords()
         wordsData.value = words
+        
+        // Initialize masonry after data is loaded
+        initWordsMasonry()
       } catch (err) {
         console.error('Error loading words:', err)
       } finally {
@@ -56,7 +83,8 @@ export default {
 
     return {
       wordsData,
-      loading
+      loading,
+      initWordsMasonry
     }
   }
 }
@@ -98,10 +126,12 @@ export default {
 }
 
 #word-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
   padding: 1rem 0;
+}
+
+#word-container .demo {
+  width: 100%;
+  margin-bottom: 15px;
 }
 
 #word-container span {
@@ -124,10 +154,6 @@ export default {
   .home-container {
     max-width: 90%;
     padding: 0 1rem;
-  }
-  
-  #word-container {
-    grid-template-columns: 1fr;
   }
 }
 </style>

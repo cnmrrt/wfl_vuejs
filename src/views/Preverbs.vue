@@ -20,13 +20,15 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
+import Macy from 'macy'
 
 export default {
   name: 'Preverbs',
   setup() {
     const preverbsData = ref([])
     const loading = ref(true)
+    let proverbsMacyInstance = null
 
     const getPreverbs = async () => {
       try {
@@ -41,11 +43,36 @@ export default {
       }
     }
 
+    // Initialize masonry layout for proverbs
+    const initProverbsMasonry = () => {
+      nextTick(() => {
+        if (proverbsMacyInstance) {
+          proverbsMacyInstance.destroy()
+        }
+        
+        proverbsMacyInstance = new Macy({
+          container: '#preverbs-container',
+          trueOrder: false,
+          waitForImages: false,
+          margin: 15,
+          columns: 5,
+          breakAt: {
+            1200: 4,
+            940: 3,
+            520: 2
+          }
+        })
+      })
+    }
+
     onMounted(async () => {
       try {
         loading.value = true
         const preverbs = await getPreverbs()
         preverbsData.value = preverbs
+        
+        // Initialize masonry after data is loaded
+        initProverbsMasonry()
       } catch (err) {
         console.error('Error loading preverbs:', err)
       } finally {
@@ -55,7 +82,8 @@ export default {
 
     return {
       preverbsData,
-      loading
+      loading,
+      initProverbsMasonry
     }
   }
 }
@@ -97,10 +125,12 @@ export default {
 }
 
 #preverbs-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
   padding: 1rem 0;
+}
+
+#preverbs-container .demo {
+  width: 100%;
+  margin-bottom: 15px;
 }
 
 #preverbs-container span {
@@ -115,10 +145,6 @@ export default {
   .home-container {
     max-width: 90%;
     padding: 0 1rem;
-  }
-  
-  #preverbs-container {
-    grid-template-columns: 1fr;
   }
 }
 </style>

@@ -43,9 +43,9 @@
         </div>
       </section>
 
-      <!-- Preverbs Section -->
+      <!-- Proverbs Section -->
       <section class="section">
-        <h2 style="font-size: 40px; text-align: center; margin: 3rem 0 2rem 0">Preverbs</h2>
+        <h2 style="font-size: 40px; text-align: center; margin: 3rem 0 2rem 0">Proverbs</h2>
         <div id="preverbs-container">
           <div 
             v-for="item in preverbsData" 
@@ -75,6 +75,8 @@ export default {
     const loading = ref(true)
     const error = ref(null)
     let macyInstance = null
+    let wordsMacyInstance = null
+    let proverbsMacyInstance = null
 
     // Data fetching functions
     const getAuthors = async () => {
@@ -116,7 +118,7 @@ export default {
       }
     }
 
-    // Initialize masonry layout
+    // Initialize masonry layout for authors
     const initMasonry = () => {
       nextTick(() => {
         if (macyInstance) {
@@ -129,6 +131,50 @@ export default {
           waitForImages: false,
           margin: 15,
           columns: 6,
+          breakAt: {
+            1200: 4,
+            940: 3,
+            520: 2
+          }
+        })
+      })
+    }
+
+    // Initialize masonry layout for words
+    const initWordsMasonry = () => {
+      nextTick(() => {
+        if (wordsMacyInstance) {
+          wordsMacyInstance.destroy()
+        }
+        
+        wordsMacyInstance = new Macy({
+          container: '#word-container',
+          trueOrder: false,
+          waitForImages: false,
+          margin: 15,
+          columns: 4,
+          breakAt: {
+            1200: 3,
+            940: 2,
+            520: 1
+          }
+        })
+      })
+    }
+
+    // Initialize masonry layout for proverbs
+    const initProverbsMasonry = () => {
+      nextTick(() => {
+        if (proverbsMacyInstance) {
+          proverbsMacyInstance.destroy()
+        }
+        
+        proverbsMacyInstance = new Macy({
+          container: '#preverbs-container',
+          trueOrder: false,
+          waitForImages: false,
+          margin: 15,
+          columns: 5,
           breakAt: {
             1200: 4,
             940: 3,
@@ -152,8 +198,10 @@ export default {
         wordsData.value = words
         preverbsData.value = preverbs
         
-        // Initialize masonry after data is loaded
+        // Initialize all masonry layouts after data is loaded
         initMasonry()
+        initWordsMasonry()
+        initProverbsMasonry()
       } catch (err) {
         error.value = err.message
         console.error('Error loading data:', err)
@@ -168,7 +216,9 @@ export default {
       preverbsData,
       loading,
       error,
-      initMasonry
+      initMasonry,
+      initWordsMasonry,
+      initProverbsMasonry
     }
   }
 }
@@ -229,17 +279,21 @@ export default {
 }
 
 #word-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1rem;
   padding: 1rem 0;
 }
 
+#word-container .demo {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
 #preverbs-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
   padding: 1rem 0;
+}
+
+#preverbs-container .demo {
+  width: 100%;
+  margin-bottom: 15px;
 }
 
 #word-container span {
@@ -270,11 +324,6 @@ export default {
   .home-container {
     max-width: 100%;
     padding: 0 1rem;
-  }
-  
-  #word-container,
-  #preverbs-container {
-    grid-template-columns: 1fr;
   }
 }
 </style>
