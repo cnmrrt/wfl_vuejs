@@ -49,7 +49,13 @@ useHead(() => {
     //   { property: 'og:description', content: word.value.en_meta_desc || '' },
     //   { property: 'og:image', content: word.value.img || '' },
     //   { property: 'og:url', content: `https://wordsfromlife.com/words/${word.value.id}` }
-    ]
+    ],
+    link: [
+        {
+          rel: 'canonical',
+          href: `https://wordsfromlife.com/words/${preverb.value.id}`
+        }
+      ]
   }
 })
 </script>

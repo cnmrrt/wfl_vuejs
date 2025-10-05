@@ -32,13 +32,11 @@ import { useRoute, useHead } from '#imports'
 const route = useRoute()
 const slug = route.params.slug
 
-// ✅ asyncData = loads before render (SSR + SSG)
 const { data: word } = await useAsyncData(`word-${slug}`, async () => {
   const res = await $fetch('https://words-from-life-5cb26-default-rtdb.firebaseio.com/words.json')
   return res.find(item => item.id?.toLowerCase() === slug.toLowerCase())
 })
 
-// ✅ SEO
 useHead(() => {
   if (!word.value) return {}
   return {
@@ -49,7 +47,13 @@ useHead(() => {
       { property: 'og:description', content: word.value.en_meta_desc || '' },
       { property: 'og:image', content: word.value.img || '' },
       { property: 'og:url', content: `https://wordsfromlife.com/words/${word.value.id}` }
-    ]
+    ],
+    link: [
+        {
+          rel: 'canonical',
+          href: `https://wordsfromlife.com/words/${word.value.id}`
+        }
+      ]
   }
 })
 </script>
