@@ -3,9 +3,11 @@ import https, { Server } from 'node:https';
 import { EventEmitter } from 'node:events';
 import { Buffer as Buffer$1 } from 'node:buffer';
 import { promises, existsSync, mkdirSync } from 'node:fs';
-import { resolve as resolve$1, dirname as dirname$1, join } from 'node:path';
+import { resolve as resolve$2, dirname as dirname$1, join } from 'node:path';
 import { createHash } from 'node:crypto';
+import { toValue } from 'vue';
 import { fileURLToPath } from 'node:url';
+import { createConsola } from 'consola';
 import Database from 'better-sqlite3';
 import { ipxFSStorage, ipxHttpStorage, createIPX, createIPXH3Handler } from 'ipx';
 
@@ -324,6 +326,19 @@ function joinRelativeURL(..._input) {
   }
   return url;
 }
+function withHttps(input) {
+  return withProtocol(input, "https://");
+}
+function withProtocol(input, protocol) {
+  let match = input.match(PROTOCOL_REGEX);
+  if (!match) {
+    match = input.match(/^\/{2,}/);
+  }
+  if (!match) {
+    return protocol + input;
+  }
+  return protocol + input.slice(match[0].length);
+}
 
 const protocolRelative = Symbol.for("ufo:protocolRelative");
 function parseURL(input = "", defaultProto) {
@@ -343,7 +358,7 @@ function parseURL(input = "", defaultProto) {
     };
   }
   if (!hasProtocol(input, { acceptRelative: true })) {
-    return parsePath(input);
+    return defaultProto ? parseURL(defaultProto + input) : parsePath(input);
   }
   const [, protocol = "", auth, hostAndPath = ""] = input.replace(/\\/g, "/").match(/^[\s\0]*([\w+.-]{2,}:)?\/\/([^/@]+@)?(.*)/) || [];
   let [, host = "", path = ""] = hostAndPath.match(/([^#/?]*)(.*)?/) || [];
@@ -854,6 +869,7 @@ function getRequestHeader(event, name) {
   const value = headers[name.toLowerCase()];
   return value;
 }
+const getHeader = getRequestHeader;
 function getRequestHost(event, opts = {}) {
   if (opts.xForwardedHost) {
     const _header = event.node.req.headers["x-forwarded-host"];
@@ -2590,8 +2606,8 @@ function createNodeFetch() {
 }
 const fetch$1 = globalThis.fetch ? (...args) => globalThis.fetch(...args) : createNodeFetch();
 const Headers$1 = globalThis.Headers || s$1;
-const AbortController = globalThis.AbortController || i;
-const ofetch = createFetch({ fetch: fetch$1, Headers: Headers$1, AbortController });
+const AbortController$1 = globalThis.AbortController || i;
+const ofetch = createFetch({ fetch: fetch$1, Headers: Headers$1, AbortController: AbortController$1 });
 const $fetch$1 = ofetch;
 
 function wrapToPromise(value) {
@@ -2607,7 +2623,7 @@ function asyncCall(function_, ...arguments_) {
     return Promise.reject(error);
   }
 }
-function isPrimitive(value) {
+function isPrimitive$1(value) {
   const type = typeof value;
   return value === null || type !== "object" && type !== "function";
 }
@@ -2616,7 +2632,7 @@ function isPureObject(value) {
   return !proto || proto.isPrototypeOf(Object);
 }
 function stringify(value) {
-  if (isPrimitive(value)) {
+  if (isPrimitive$1(value)) {
     return String(value);
   }
   if (isPureObject(value) || Array.isArray(value)) {
@@ -3269,7 +3285,7 @@ async function readdirRecursive(dir, ignore, maxDepth) {
   const files = [];
   await Promise.all(
     entries.map(async (entry) => {
-      const entryPath = resolve$1(dir, entry.name);
+      const entryPath = resolve$2(dir, entry.name);
       if (entry.isDirectory()) {
         if (maxDepth === void 0 || maxDepth > 0) {
           const dirFiles = await readdirRecursive(
@@ -3292,7 +3308,7 @@ async function rmRecursive(dir) {
   const entries = await readdir(dir);
   await Promise.all(
     entries.map((entry) => {
-      const entryPath = resolve$1(dir, entry.name);
+      const entryPath = resolve$2(dir, entry.name);
       if (entry.isDirectory()) {
         return rmRecursive(entryPath).then(() => promises.rmdir(entryPath));
       } else {
@@ -3308,7 +3324,7 @@ const unstorage_47drivers_47fs_45lite = defineDriver((opts = {}) => {
   if (!opts.base) {
     throw createRequiredError(DRIVER_NAME, "base");
   }
-  opts.base = resolve$1(opts.base);
+  opts.base = resolve$2(opts.base);
   const r = (key) => {
     if (PATH_TRAVERSE_RE.test(key)) {
       throw createError(
@@ -4090,7 +4106,7 @@ function _expandFromEnv(value) {
 const _inlineRuntimeConfig = {
   "app": {
     "baseURL": "/",
-    "buildId": "b4bb2b9b-72bc-4082-9ad7-82ccdf009b3e",
+    "buildId": "3cd34e29-c6ad-4c33-9937-a339c6b67603",
     "buildAssetsDir": "/_nuxt/",
     "cdnURL": ""
   },
@@ -4106,6 +4122,12 @@ const _inlineRuntimeConfig = {
       "/__nuxt_content/content/sql_dump.txt": {
         "prerender": true
       },
+      "/__sitemap__/style.xsl": {
+        "headers": {
+          "Content-Type": "application/xslt+xml"
+        }
+      },
+      "/sitemap.xml": {},
       "/_nuxt/builds/meta/**": {
         "headers": {
           "cache-control": "public, max-age=31536000, immutable"
@@ -4170,6 +4192,78 @@ const _inlineRuntimeConfig = {
   },
   "nuxt-scripts": {
     "version": "0.12.1"
+  },
+  "sitemap": {
+    "isI18nMapped": false,
+    "sitemapName": "sitemap.xml",
+    "isMultiSitemap": false,
+    "excludeAppSources": [],
+    "cacheMaxAgeSeconds": 600,
+    "autoLastmod": true,
+    "defaultSitemapsChunkSize": 1000,
+    "minify": false,
+    "sortEntries": true,
+    "debug": false,
+    "discoverImages": true,
+    "discoverVideos": true,
+    "sitemapsPathPrefix": "/__sitemap__/",
+    "isNuxtContentDocumentDriven": false,
+    "xsl": "/__sitemap__/style.xsl",
+    "xslTips": true,
+    "xslColumns": [
+      {
+        "label": "URL",
+        "width": "50%"
+      },
+      {
+        "label": "Images",
+        "width": "25%",
+        "select": "count(image:image)"
+      },
+      {
+        "label": "Last Updated",
+        "width": "25%",
+        "select": "concat(substring(sitemap:lastmod,0,11),concat(' ', substring(sitemap:lastmod,12,5)),concat(' ', substring(sitemap:lastmod,20,6)))"
+      }
+    ],
+    "credits": true,
+    "version": "7.4.7",
+    "sitemaps": {
+      "sitemap.xml": {
+        "sitemapName": "sitemap.xml",
+        "route": "sitemap.xml",
+        "defaults": {
+          "changefreq": "daily",
+          "priority": 0.7,
+          "lastmod": "2025-10-05T23:53:35Z"
+        },
+        "include": [],
+        "exclude": [
+          "/_**",
+          "/_nuxt/**",
+          "/__nuxt_content/**"
+        ],
+        "includeAppSources": true
+      }
+    }
+  },
+  "nuxt-site-config": {
+    "stack": [
+      {
+        "_context": "system",
+        "_priority": -15,
+        "name": "wfl_vuejs",
+        "env": "production"
+      },
+      {
+        "_context": "package.json",
+        "_priority": -10,
+        "name": "nuxt-app"
+      }
+    ],
+    "version": "3.2.9",
+    "debug": false,
+    "multiTenancy": []
   },
   "ipx": {
     "baseURL": "/_ipx",
@@ -4593,1067 +4687,1398 @@ async function errorHandler(error, event) {
   // H3 will handle fallback
 }
 
+const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$";
+const unsafeChars = /[<>\b\f\n\r\t\0\u2028\u2029]/g;
+const reserved = /^(?:do|if|in|for|int|let|new|try|var|byte|case|char|else|enum|goto|long|this|void|with|await|break|catch|class|const|final|float|short|super|throw|while|yield|delete|double|export|import|native|return|switch|throws|typeof|boolean|default|extends|finally|package|private|abstract|continue|debugger|function|volatile|interface|protected|transient|implements|instanceof|synchronized)$/;
+const escaped = {
+  "<": "\\u003C",
+  ">": "\\u003E",
+  "/": "\\u002F",
+  "\\": "\\\\",
+  "\b": "\\b",
+  "\f": "\\f",
+  "\n": "\\n",
+  "\r": "\\r",
+  "	": "\\t",
+  "\0": "\\0",
+  "\u2028": "\\u2028",
+  "\u2029": "\\u2029"
+};
+const objectProtoOwnPropertyNames = Object.getOwnPropertyNames(Object.prototype).sort().join("\0");
+function devalue(value) {
+  const counts = /* @__PURE__ */ new Map();
+  let logNum = 0;
+  function log(message) {
+    if (logNum < 100) {
+      console.warn(message);
+      logNum += 1;
+    }
+  }
+  function walk(thing) {
+    if (typeof thing === "function") {
+      log(`Cannot stringify a function ${thing.name}`);
+      return;
+    }
+    if (counts.has(thing)) {
+      counts.set(thing, counts.get(thing) + 1);
+      return;
+    }
+    counts.set(thing, 1);
+    if (!isPrimitive(thing)) {
+      const type = getType(thing);
+      switch (type) {
+        case "Number":
+        case "String":
+        case "Boolean":
+        case "Date":
+        case "RegExp":
+          return;
+        case "Array":
+          thing.forEach(walk);
+          break;
+        case "Set":
+        case "Map":
+          Array.from(thing).forEach(walk);
+          break;
+        default:
+          const proto = Object.getPrototypeOf(thing);
+          if (proto !== Object.prototype && proto !== null && Object.getOwnPropertyNames(proto).sort().join("\0") !== objectProtoOwnPropertyNames) {
+            if (typeof thing.toJSON !== "function") {
+              log(`Cannot stringify arbitrary non-POJOs ${thing.constructor.name}`);
+            }
+          } else if (Object.getOwnPropertySymbols(thing).length > 0) {
+            log(`Cannot stringify POJOs with symbolic keys ${Object.getOwnPropertySymbols(thing).map((symbol) => symbol.toString())}`);
+          } else {
+            Object.keys(thing).forEach((key) => walk(thing[key]));
+          }
+      }
+    }
+  }
+  walk(value);
+  const names = /* @__PURE__ */ new Map();
+  Array.from(counts).filter((entry) => entry[1] > 1).sort((a, b) => b[1] - a[1]).forEach((entry, i) => {
+    names.set(entry[0], getName(i));
+  });
+  function stringify(thing) {
+    if (names.has(thing)) {
+      return names.get(thing);
+    }
+    if (isPrimitive(thing)) {
+      return stringifyPrimitive(thing);
+    }
+    const type = getType(thing);
+    switch (type) {
+      case "Number":
+      case "String":
+      case "Boolean":
+        return `Object(${stringify(thing.valueOf())})`;
+      case "RegExp":
+        return thing.toString();
+      case "Date":
+        return `new Date(${thing.getTime()})`;
+      case "Array":
+        const members = thing.map((v, i) => i in thing ? stringify(v) : "");
+        const tail = thing.length === 0 || thing.length - 1 in thing ? "" : ",";
+        return `[${members.join(",")}${tail}]`;
+      case "Set":
+      case "Map":
+        return `new ${type}([${Array.from(thing).map(stringify).join(",")}])`;
+      default:
+        if (thing.toJSON) {
+          let json = thing.toJSON();
+          if (getType(json) === "String") {
+            try {
+              json = JSON.parse(json);
+            } catch (e) {
+            }
+          }
+          return stringify(json);
+        }
+        if (Object.getPrototypeOf(thing) === null) {
+          if (Object.keys(thing).length === 0) {
+            return "Object.create(null)";
+          }
+          return `Object.create(null,{${Object.keys(thing).map((key) => `${safeKey(key)}:{writable:true,enumerable:true,value:${stringify(thing[key])}}`).join(",")}})`;
+        }
+        return `{${Object.keys(thing).map((key) => `${safeKey(key)}:${stringify(thing[key])}`).join(",")}}`;
+    }
+  }
+  const str = stringify(value);
+  if (names.size) {
+    const params = [];
+    const statements = [];
+    const values = [];
+    names.forEach((name, thing) => {
+      params.push(name);
+      if (isPrimitive(thing)) {
+        values.push(stringifyPrimitive(thing));
+        return;
+      }
+      const type = getType(thing);
+      switch (type) {
+        case "Number":
+        case "String":
+        case "Boolean":
+          values.push(`Object(${stringify(thing.valueOf())})`);
+          break;
+        case "RegExp":
+          values.push(thing.toString());
+          break;
+        case "Date":
+          values.push(`new Date(${thing.getTime()})`);
+          break;
+        case "Array":
+          values.push(`Array(${thing.length})`);
+          thing.forEach((v, i) => {
+            statements.push(`${name}[${i}]=${stringify(v)}`);
+          });
+          break;
+        case "Set":
+          values.push("new Set");
+          statements.push(`${name}.${Array.from(thing).map((v) => `add(${stringify(v)})`).join(".")}`);
+          break;
+        case "Map":
+          values.push("new Map");
+          statements.push(`${name}.${Array.from(thing).map(([k, v]) => `set(${stringify(k)}, ${stringify(v)})`).join(".")}`);
+          break;
+        default:
+          values.push(Object.getPrototypeOf(thing) === null ? "Object.create(null)" : "{}");
+          Object.keys(thing).forEach((key) => {
+            statements.push(`${name}${safeProp(key)}=${stringify(thing[key])}`);
+          });
+      }
+    });
+    statements.push(`return ${str}`);
+    return `(function(${params.join(",")}){${statements.join(";")}}(${values.join(",")}))`;
+  } else {
+    return str;
+  }
+}
+function getName(num) {
+  let name = "";
+  do {
+    name = chars[num % chars.length] + name;
+    num = ~~(num / chars.length) - 1;
+  } while (num >= 0);
+  return reserved.test(name) ? `${name}0` : name;
+}
+function isPrimitive(thing) {
+  return Object(thing) !== thing;
+}
+function stringifyPrimitive(thing) {
+  if (typeof thing === "string") {
+    return stringifyString(thing);
+  }
+  if (thing === void 0) {
+    return "void 0";
+  }
+  if (thing === 0 && 1 / thing < 0) {
+    return "-0";
+  }
+  const str = String(thing);
+  if (typeof thing === "number") {
+    return str.replace(/^(-)?0\./, "$1.");
+  }
+  return str;
+}
+function getType(thing) {
+  return Object.prototype.toString.call(thing).slice(8, -1);
+}
+function escapeUnsafeChar(c) {
+  return escaped[c] || c;
+}
+function escapeUnsafeChars(str) {
+  return str.replace(unsafeChars, escapeUnsafeChar);
+}
+function safeKey(key) {
+  return /^[_$a-zA-Z][_$a-zA-Z0-9]*$/.test(key) ? key : escapeUnsafeChars(JSON.stringify(key));
+}
+function safeProp(key) {
+  return /^[_$a-zA-Z][_$a-zA-Z0-9]*$/.test(key) ? `.${key}` : `[${escapeUnsafeChars(JSON.stringify(key))}]`;
+}
+function stringifyString(str) {
+  let result = '"';
+  for (let i = 0; i < str.length; i += 1) {
+    const char = str.charAt(i);
+    const code = char.charCodeAt(0);
+    if (char === '"') {
+      result += '\\"';
+    } else if (char in escaped) {
+      result += escaped[char];
+    } else if (code >= 55296 && code <= 57343) {
+      const next = str.charCodeAt(i + 1);
+      if (code <= 56319 && (next >= 56320 && next <= 57343)) {
+        result += char + str[++i];
+      } else {
+        result += `\\u${code.toString(16).toUpperCase()}`;
+      }
+    } else {
+      result += char;
+    }
+  }
+  result += '"';
+  return result;
+}
+
+function normalizeSiteConfig(config) {
+  if (typeof config.indexable !== "undefined")
+    config.indexable = String(config.indexable) !== "false";
+  if (typeof config.trailingSlash !== "undefined" && !config.trailingSlash)
+    config.trailingSlash = String(config.trailingSlash) !== "false";
+  if (config.url && !hasProtocol(String(config.url), { acceptRelative: true, strict: false }))
+    config.url = withHttps(String(config.url));
+  const keys = Object.keys(config).sort((a, b) => a.localeCompare(b));
+  const newConfig = {};
+  for (const k of keys)
+    newConfig[k] = config[k];
+  return newConfig;
+}
+function createSiteConfigStack(options) {
+  const debug = options?.debug || false;
+  const stack = [];
+  function push(input) {
+    if (!input || typeof input !== "object" || Object.keys(input).length === 0) {
+      return () => {
+      };
+    }
+    if (!input._context && debug) {
+      let lastFunctionName = new Error("tmp").stack?.split("\n")[2]?.split(" ")[5];
+      if (lastFunctionName?.includes("/"))
+        lastFunctionName = "anonymous";
+      input._context = lastFunctionName;
+    }
+    const entry = {};
+    for (const k in input) {
+      const val = input[k];
+      if (typeof val !== "undefined" && val !== "")
+        entry[k] = val;
+    }
+    let idx;
+    if (Object.keys(entry).filter((k) => !k.startsWith("_")).length > 0)
+      idx = stack.push(entry);
+    return () => {
+      if (typeof idx !== "undefined") {
+        stack.splice(idx - 1, 1);
+      }
+    };
+  }
+  function get(options2) {
+    const siteConfig = {};
+    if (options2?.debug)
+      siteConfig._context = {};
+    siteConfig._priority = {};
+    for (const o in stack.sort((a, b) => (a._priority || 0) - (b._priority || 0))) {
+      for (const k in stack[o]) {
+        const key = k;
+        const val = options2?.resolveRefs ? toValue(stack[o][k]) : stack[o][k];
+        if (!k.startsWith("_") && typeof val !== "undefined" && val !== "") {
+          siteConfig[k] = val;
+          if (typeof stack[o]._priority !== "undefined" && stack[o]._priority !== -1) {
+            siteConfig._priority[key] = stack[o]._priority;
+          }
+          if (options2?.debug)
+            siteConfig._context[key] = stack[o]._context?.[key] || stack[o]._context || "anonymous";
+        }
+      }
+    }
+    return options2?.skipNormalize ? siteConfig : normalizeSiteConfig(siteConfig);
+  }
+  return {
+    stack,
+    push,
+    get
+  };
+}
+
+function envSiteConfig(env) {
+  return Object.fromEntries(Object.entries(env).filter(([k]) => k.startsWith("NUXT_SITE_") || k.startsWith("NUXT_PUBLIC_SITE_")).map(([k, v]) => [
+    k.replace(/^NUXT_(PUBLIC_)?SITE_/, "").split("_").map((s, i) => i === 0 ? s.toLowerCase() : s[0]?.toUpperCase() + s.slice(1).toLowerCase()).join(""),
+    v
+  ]));
+}
+
+function getSiteConfig(e, _options) {
+  e.context.siteConfig = e.context.siteConfig || createSiteConfigStack();
+  const options = defu(_options, useRuntimeConfig(e)["nuxt-site-config"], { debug: false });
+  return e.context.siteConfig.get(options);
+}
+
+const _Udjmyl7s_FJOFfbr1jpjZ2rckpfVGswRQYwRlR1L_o = defineNitroPlugin(async (nitroApp) => {
+  nitroApp.hooks.hook("render:html", async (ctx, { event }) => {
+    const routeOptions = getRouteRules(event);
+    const isIsland = process.env.NUXT_COMPONENT_ISLANDS && event.path.startsWith("/__nuxt_island");
+    event.path;
+    const noSSR = event.context.nuxt?.noSSR || routeOptions.ssr === false && !isIsland || (false);
+    if (noSSR) {
+      const siteConfig = Object.fromEntries(
+        Object.entries(getSiteConfig(event)).map(([k, v]) => [k, toValue(v)])
+      );
+      ctx.body.push(`<script>window.__NUXT_SITE_CONFIG__=${devalue(siteConfig)}<\/script>`);
+    }
+  });
+});
+
 const plugins = [
-  
+  _Udjmyl7s_FJOFfbr1jpjZ2rckpfVGswRQYwRlR1L_o
 ];
 
 const assets = {
   "/.DS_Store": {
     "type": "text/plain; charset=utf-8",
     "etag": "\"1804-3y++sUAKzaCQmjLBz2v0kvESHgc\"",
-    "mtime": "2025-10-05T16:02:54.439Z",
+    "mtime": "2025-10-05T23:53:38.153Z",
     "size": 6148,
     "path": "../public/.DS_Store"
   },
   "/ads.txt": {
     "type": "text/plain; charset=utf-8",
     "etag": "\"3b-poit9NpiDn4oEF3Tpos4YMb883o\"",
-    "mtime": "2025-10-05T16:02:54.441Z",
+    "mtime": "2025-10-05T23:53:38.153Z",
     "size": 59,
     "path": "../public/ads.txt"
   },
   "/favicon.ico": {
     "type": "image/vnd.microsoft.icon",
     "etag": "\"8b5-1vZhPKtELm5di+VNVx7AzLvEa0E\"",
-    "mtime": "2025-10-05T16:02:54.439Z",
+    "mtime": "2025-10-05T23:53:38.153Z",
     "size": 2229,
     "path": "../public/favicon.ico"
   },
   "/robots.txt": {
     "type": "text/plain; charset=utf-8",
     "etag": "\"18-j8OIsL9qGDmNZ+lHhp2tyH4XtaE\"",
-    "mtime": "2025-10-05T16:02:54.439Z",
+    "mtime": "2025-10-05T23:53:38.153Z",
     "size": 24,
     "path": "../public/robots.txt"
   },
   "/_nuxt/AdGs_cvP.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"58f-K3Ejcn6Y9kEs6ZnZ0A0R7BWd/W0\"",
-    "mtime": "2025-10-05T16:02:54.431Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 1423,
     "path": "../public/_nuxt/AdGs_cvP.js"
   },
   "/_nuxt/Aza7rtkh.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"1d3-2hjf1hO5UZfT/mScAeNBW9IzHvA\"",
-    "mtime": "2025-10-05T16:02:54.431Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 467,
     "path": "../public/_nuxt/Aza7rtkh.js"
   },
   "/_nuxt/B2fiVYxs.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"174-qstIX8EeRhdbMdKgkkOlCMum8xM\"",
-    "mtime": "2025-10-05T16:02:54.431Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 372,
     "path": "../public/_nuxt/B2fiVYxs.js"
   },
   "/_nuxt/B8Bj2yVs.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"1e5-9D88z4M55FoKthETPLtaY0nMR70\"",
-    "mtime": "2025-10-05T16:02:54.431Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 485,
     "path": "../public/_nuxt/B8Bj2yVs.js"
   },
   "/_nuxt/BE4ZkZ8T.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"df-orBDEP3YYB12aSBOBPpIVnuPt5E\"",
-    "mtime": "2025-10-05T16:02:54.431Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 223,
     "path": "../public/_nuxt/BE4ZkZ8T.js"
   },
   "/_nuxt/BpWa_Uv-.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"d0-sMrit1X96sHW98UO32Q3uRbF/Kg\"",
-    "mtime": "2025-10-05T16:02:54.431Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 208,
     "path": "../public/_nuxt/BpWa_Uv-.js"
   },
   "/_nuxt/Bse9RRCq.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"13f0-gRhxKq2GfHUXc9pWvDOklqkTaUU\"",
-    "mtime": "2025-10-05T16:02:54.431Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 5104,
     "path": "../public/_nuxt/Bse9RRCq.js"
   },
   "/_nuxt/Bu0w1h7P.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"5ae-Fn2r2jQC6xiWwyvIOkql8NYYa3w\"",
-    "mtime": "2025-10-05T16:02:54.431Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 1454,
     "path": "../public/_nuxt/Bu0w1h7P.js"
   },
   "/_nuxt/Bx1QFI4L.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"38a-8v7GTHRUSLE+xPPYpykuBBMlqro\"",
-    "mtime": "2025-10-05T16:02:54.431Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 906,
     "path": "../public/_nuxt/Bx1QFI4L.js"
   },
   "/_nuxt/Byw-Jarj.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"24ef-QtvtqadydWB+BS/7voaEfAo4qtw\"",
-    "mtime": "2025-10-05T16:02:54.431Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 9455,
     "path": "../public/_nuxt/Byw-Jarj.js"
   },
   "/_nuxt/C3ZpaLER.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"d5-Wt3pGDIgEDc8oa+NK+GZO13Fq7Q\"",
-    "mtime": "2025-10-05T16:02:54.431Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 213,
     "path": "../public/_nuxt/C3ZpaLER.js"
-  },
-  "/_nuxt/C42YsXUT.js": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"2a618-BssuOAoYOSzyNj0wCu/ha9c2/mY\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
-    "size": 173592,
-    "path": "../public/_nuxt/C42YsXUT.js"
   },
   "/_nuxt/C83V5CFi.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"1df-QTKIYssZAWwp/r7jnKPg1cZ1gYc\"",
-    "mtime": "2025-10-05T16:02:54.431Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 479,
     "path": "../public/_nuxt/C83V5CFi.js"
   },
   "/_nuxt/CGRXHs7T.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"1e5-FbogWnXipQd+2lIl1mpx8aBKZZU\"",
-    "mtime": "2025-10-05T16:02:54.431Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 485,
     "path": "../public/_nuxt/CGRXHs7T.js"
   },
   "/_nuxt/CQLh8Csv.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"ab-uWRZoxaKTwjJveY9adBWQoBYqbI\"",
-    "mtime": "2025-10-05T16:02:54.431Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 171,
     "path": "../public/_nuxt/CQLh8Csv.js"
   },
   "/_nuxt/CUtVOrRl.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"624-Wn1iVb5E0NcDLrzY1eBCqfT6fMw\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 1572,
     "path": "../public/_nuxt/CUtVOrRl.js"
   },
   "/_nuxt/CXrAA8c7.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"2a4e-+LTa4+OuhVkcbKrfA6xZtCqggkE\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 10830,
     "path": "../public/_nuxt/CXrAA8c7.js"
   },
   "/_nuxt/C_NZxvcX.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"d3-LCT/I0Mws5Utmy3j0eKBlymOeA4\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 211,
     "path": "../public/_nuxt/C_NZxvcX.js"
   },
   "/_nuxt/CbFJVbCO.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"cd-zvgTRSAihrT663eUsf4D1hu6ywM\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 205,
     "path": "../public/_nuxt/CbFJVbCO.js"
   },
   "/_nuxt/CdPWYiMW.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"cf-eKPN6thfRBMrfbH2c2QkWDVgzUU\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 207,
     "path": "../public/_nuxt/CdPWYiMW.js"
   },
   "/_nuxt/CddPCReR.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"949-sLupyEUOLFwkdyWcQdL9SdnE/CA\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.144Z",
     "size": 2377,
     "path": "../public/_nuxt/CddPCReR.js"
   },
   "/_nuxt/ChLxG6-z.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"cf-E1tPNHQI/7YtPsLihD12enHkm5A\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 207,
     "path": "../public/_nuxt/ChLxG6-z.js"
   },
   "/_nuxt/Cw0veRq5.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"36d-aM7rf6MAdv3gEWqW44hZujr+b98\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 877,
     "path": "../public/_nuxt/Cw0veRq5.js"
   },
   "/_nuxt/CyPLmLo6.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"d0-MDwkUgMINlIbFcVCwnzWWzD605o\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 208,
     "path": "../public/_nuxt/CyPLmLo6.js"
   },
   "/_nuxt/DTVwJife.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"2fa-SRPm/N7D4bip7YoHnG5jrny4k/A\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 762,
     "path": "../public/_nuxt/DTVwJife.js"
   },
   "/_nuxt/DUVORPmC.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"4eb-KLGABddgmc5o1lZ6b3s1CZyp0fA\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 1259,
     "path": "../public/_nuxt/DUVORPmC.js"
+  },
+  "/_nuxt/DWbxESlY.js": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"c54-lpPASHMHM1OXwiOHRBFALMqxvlc\"",
+    "mtime": "2025-10-05T23:53:38.145Z",
+    "size": 3156,
+    "path": "../public/_nuxt/DWbxESlY.js"
   },
   "/_nuxt/DWobKQhV.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"d89-/wUPWhLHi3VpvNB7fr7+rH50MB8\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 3465,
     "path": "../public/_nuxt/DWobKQhV.js"
-  },
-  "/_nuxt/DXNi50XW.js": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"c54-gkBMFUlO1r+U1Db47muopZnvPBo\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
-    "size": 3156,
-    "path": "../public/_nuxt/DXNi50XW.js"
   },
   "/_nuxt/DZ6GCxGD.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"ca-oA65gyAFZx4v6PP/wl+uvYHJ17s\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 202,
     "path": "../public/_nuxt/DZ6GCxGD.js"
   },
   "/_nuxt/DiKt4G_B.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"1e5-6SOKyJOJQe7crSqgm8VAUWr2AfQ\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 485,
     "path": "../public/_nuxt/DiKt4G_B.js"
   },
   "/_nuxt/DiQP5VPQ.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"1e5-FAs/sJJZ5j+Zl/hfaSUNa1ikbwA\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 485,
     "path": "../public/_nuxt/DiQP5VPQ.js"
   },
   "/_nuxt/DkMsOhgw.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"cf-m7g11CB40INUo/w+glSdh3XVT8E\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 207,
     "path": "../public/_nuxt/DkMsOhgw.js"
+  },
+  "/_nuxt/DqtUXuNu.js": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"2addd-opXEsAM3IcDf8SxDK6Hq4OnZWJo\"",
+    "mtime": "2025-10-05T23:53:38.145Z",
+    "size": 175581,
+    "path": "../public/_nuxt/DqtUXuNu.js"
   },
   "/_nuxt/DwWHYaDT.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"1e5-ovV1D4VQxBjeJfrJ6QFLkc3kZlM\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 485,
     "path": "../public/_nuxt/DwWHYaDT.js"
   },
   "/_nuxt/Fyk1ahGJ.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"d7-An12w0y+Y5gcMeQ3AoCuwGariEM\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 215,
     "path": "../public/_nuxt/Fyk1ahGJ.js"
   },
   "/_nuxt/GebhIAkO.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"15a9-vDK4UOk20EWlXwi5NkYSrtFQerU\"",
-    "mtime": "2025-10-05T16:02:54.432Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 5545,
     "path": "../public/_nuxt/GebhIAkO.js"
   },
   "/_nuxt/IsGNcAQv.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"ec7-1Prfkvfa9a1bT4eqTo7kC/iFlsk\"",
-    "mtime": "2025-10-05T16:02:54.433Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 3783,
     "path": "../public/_nuxt/IsGNcAQv.js"
   },
   "/_nuxt/Navbar.v_zuMSe4.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"25a-Gg2wxWDl3+9sDzwyPGd/lVYdxi4\"",
-    "mtime": "2025-10-05T16:02:54.433Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 602,
     "path": "../public/_nuxt/Navbar.v_zuMSe4.css"
   },
   "/_nuxt/ProsePre.D5orA6B_.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"1e-jczvRAVUXbzGL6yotozKFbyMO4s\"",
-    "mtime": "2025-10-05T16:02:54.433Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 30,
     "path": "../public/_nuxt/ProsePre.D5orA6B_.css"
   },
   "/_nuxt/SGtvs0t0.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"cf-tzYVOR8RyMoMQ+t1Xo0Aa1NEVNo\"",
-    "mtime": "2025-10-05T16:02:54.433Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 207,
     "path": "../public/_nuxt/SGtvs0t0.js"
   },
   "/_nuxt/ScIarClR.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"cf-0k9KBAOKrc0KMstdkVcaZ2RYR2A\"",
-    "mtime": "2025-10-05T16:02:54.433Z",
+    "mtime": "2025-10-05T23:53:38.145Z",
     "size": 207,
     "path": "../public/_nuxt/ScIarClR.js"
   },
   "/_nuxt/Vu3LMiMU.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"1da0-j9h7cYYy3cG7ANL/7dqgKhuK0+U\"",
-    "mtime": "2025-10-05T16:02:54.433Z",
+    "mtime": "2025-10-05T23:53:38.146Z",
     "size": 7584,
     "path": "../public/_nuxt/Vu3LMiMU.js"
   },
   "/_nuxt/_slug_.BEvQ4BN5.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"581-rsgmJVdyP4FnaSsg9eTYD47HGwQ\"",
-    "mtime": "2025-10-05T16:02:54.433Z",
+    "mtime": "2025-10-05T23:53:38.146Z",
     "size": 1409,
     "path": "../public/_nuxt/_slug_.BEvQ4BN5.css"
   },
   "/_nuxt/_slug_.DI-TDwtN.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"23b-MLhPEgSSHjj5xizJCoEVlqhLIow\"",
-    "mtime": "2025-10-05T16:02:54.433Z",
+    "mtime": "2025-10-05T23:53:38.146Z",
     "size": 571,
     "path": "../public/_nuxt/_slug_.DI-TDwtN.css"
   },
   "/_nuxt/_slug_.gBCXxS_X.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"23b-zxvD9MyMLD5Gq8GzIr87VWWeT9Q\"",
-    "mtime": "2025-10-05T16:02:54.433Z",
+    "mtime": "2025-10-05T23:53:38.146Z",
     "size": 571,
     "path": "../public/_nuxt/_slug_.gBCXxS_X.css"
   },
   "/_nuxt/about.D-uAabGn.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"268-Bc/75aiyDTKAjHnPEadko2+3tEI\"",
-    "mtime": "2025-10-05T16:02:54.433Z",
+    "mtime": "2025-10-05T23:53:38.146Z",
     "size": 616,
     "path": "../public/_nuxt/about.D-uAabGn.css"
   },
   "/_nuxt/eXmrKoa2.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"193-Tfz8YDR+OVJDzgjmgBJdzzAr00w\"",
-    "mtime": "2025-10-05T16:02:54.433Z",
+    "mtime": "2025-10-05T23:53:38.146Z",
     "size": 403,
     "path": "../public/_nuxt/eXmrKoa2.js"
   },
   "/_nuxt/entry.CZS_v37g.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"77e-RRxWVKjBepkzasVGaH8QWFuw3mg\"",
-    "mtime": "2025-10-05T16:02:54.433Z",
+    "mtime": "2025-10-05T23:53:38.146Z",
     "size": 1918,
     "path": "../public/_nuxt/entry.CZS_v37g.css"
   },
   "/_nuxt/error-404.DlVPZ4GE.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"980-mEKr2yDhHmG21upnVXydWBGkQJ0\"",
-    "mtime": "2025-10-05T16:02:54.433Z",
+    "mtime": "2025-10-05T23:53:38.146Z",
     "size": 2432,
     "path": "../public/_nuxt/error-404.DlVPZ4GE.css"
   },
   "/_nuxt/error-500.DjyirMQI.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"775-e/ssyla9fMU+TjO0KjMl5vd3xXk\"",
-    "mtime": "2025-10-05T16:02:54.433Z",
+    "mtime": "2025-10-05T23:53:38.146Z",
     "size": 1909,
     "path": "../public/_nuxt/error-500.DjyirMQI.css"
-  },
-  "/_nuxt/index.C32iJ4EM.css": {
-    "type": "text/css; charset=utf-8",
-    "etag": "\"558-I2dqfX/LBMP454Ub8dFi/WmWoAg\"",
-    "mtime": "2025-10-05T16:02:54.433Z",
-    "size": 1368,
-    "path": "../public/_nuxt/index.C32iJ4EM.css"
   },
   "/_nuxt/index.DQGbmiK2.css": {
     "type": "text/css; charset=utf-8",
     "etag": "\"2dd-5Dp9yLEDcMeckTWLtENEr8UfsoQ\"",
-    "mtime": "2025-10-05T16:02:54.433Z",
+    "mtime": "2025-10-05T23:53:38.146Z",
     "size": 733,
     "path": "../public/_nuxt/index.DQGbmiK2.css"
+  },
+  "/_nuxt/index.Dv5VPQFi.css": {
+    "type": "text/css; charset=utf-8",
+    "etag": "\"56f-JveJ/SqD8ypJatVobCqJihIV0mU\"",
+    "mtime": "2025-10-05T23:53:38.146Z",
+    "size": 1391,
+    "path": "../public/_nuxt/index.Dv5VPQFi.css"
   },
   "/_nuxt/np9-v_Eg.js": {
     "type": "text/javascript; charset=utf-8",
     "etag": "\"cf-bjSzk3avitOx0NZG6KwI+JfHc6k\"",
-    "mtime": "2025-10-05T16:02:54.433Z",
+    "mtime": "2025-10-05T23:53:38.146Z",
     "size": 207,
     "path": "../public/_nuxt/np9-v_Eg.js"
   },
   "/__nuxt_content/content/sql_dump.txt": {
     "type": "text/plain; charset=utf-8",
     "etag": "\"22c-WMpNCLn9Jv5m6r+ofLA1aR/fqP0\"",
-    "mtime": "2025-10-05T16:02:54.418Z",
+    "mtime": "2025-10-05T23:53:38.130Z",
     "size": 556,
     "path": "../public/__nuxt_content/content/sql_dump.txt"
-  },
-  "/static/js/macy.js": {
-    "type": "text/javascript; charset=utf-8",
-    "etag": "\"19aa-/AadRe01XBgTrbdxIy//Y007mQw\"",
-    "mtime": "2025-10-05T16:02:54.438Z",
-    "size": 6570,
-    "path": "../public/static/js/macy.js"
   },
   "/static/img/allegory.jpeg": {
     "type": "image/jpeg",
     "etag": "\"10b53-lumpO17dfzeF5ainDNZOAkBFTTg\"",
-    "mtime": "2025-10-05T16:02:54.438Z",
+    "mtime": "2025-10-05T23:53:38.153Z",
     "size": 68435,
     "path": "../public/static/img/allegory.jpeg"
   },
   "/static/img/newspaper-bg.jpg": {
     "type": "image/jpeg",
     "etag": "\"1378d4b-VyFf/4dpFQxJaCfkv1hLP3N6EJQ\"",
-    "mtime": "2025-10-05T16:02:54.451Z",
+    "mtime": "2025-10-05T23:53:38.165Z",
     "size": 20417867,
     "path": "../public/static/img/newspaper-bg.jpg"
   },
   "/static/img/petrichor.jpeg": {
     "type": "image/jpeg",
     "etag": "\"cfe4-IIhJHD/ZUeD0gxhWUqb7nh/XQyg\"",
-    "mtime": "2025-10-05T16:02:54.441Z",
+    "mtime": "2025-10-05T23:53:38.153Z",
     "size": 53220,
     "path": "../public/static/img/petrichor.jpeg"
   },
+  "/static/js/macy.js": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"19aa-/AadRe01XBgTrbdxIy//Y007mQw\"",
+    "mtime": "2025-10-05T23:53:38.152Z",
+    "size": 6570,
+    "path": "../public/static/js/macy.js"
+  },
   "/_nuxt/builds/latest.json": {
     "type": "application/json",
-    "etag": "\"47-0xhmlRnpDTsq2u2rFmN7S2TA0Mc\"",
-    "mtime": "2025-10-05T16:02:54.427Z",
+    "etag": "\"47-Ftz0UvEZSBYXtdN82oZMuotE3/o\"",
+    "mtime": "2025-10-05T23:53:38.140Z",
     "size": 71,
     "path": "../public/_nuxt/builds/latest.json"
   },
   "/static/img/preverbs/a-watched-pot-never-boils.jpeg": {
     "type": "image/jpeg",
     "etag": "\"1447d-jGPrRN8xw9XZBurflF+X99IaYfo\"",
-    "mtime": "2025-10-05T16:02:54.438Z",
+    "mtime": "2025-10-05T23:53:38.152Z",
     "size": 83069,
     "path": "../public/static/img/preverbs/a-watched-pot-never-boils.jpeg"
   },
   "/static/img/preverbs/every-cloud-has-a-silver-lining.jpeg": {
     "type": "image/jpeg",
     "etag": "\"c09b-gq338O2YvnbaKvu3WtMJii4O6I8\"",
-    "mtime": "2025-10-05T16:02:54.441Z",
+    "mtime": "2025-10-05T23:53:38.153Z",
     "size": 49307,
     "path": "../public/static/img/preverbs/every-cloud-has-a-silver-lining.jpeg"
   },
   "/static/img/preverbs/strike-while-the-iron-is-hot.jpeg": {
     "type": "image/jpeg",
     "etag": "\"fb94-Lkc9U+Y02HkNi+Nn0pYvFcmyiQI\"",
-    "mtime": "2025-10-05T16:02:54.447Z",
+    "mtime": "2025-10-05T23:53:38.153Z",
     "size": 64404,
     "path": "../public/static/img/preverbs/strike-while-the-iron-is-hot.jpeg"
   },
   "/static/img/preverbs/the-pen-is-mightier-than-the-sword.jpeg": {
     "type": "image/jpeg",
     "etag": "\"1330a-pm+3sKpOz+1Hu10URQJneU3KaVQ\"",
-    "mtime": "2025-10-05T16:02:54.446Z",
+    "mtime": "2025-10-05T23:53:38.153Z",
     "size": 78602,
     "path": "../public/static/img/preverbs/the-pen-is-mightier-than-the-sword.jpeg"
   },
   "/static/img/preverbs/you-cant-judge-a-book-by-its-cover.webp": {
     "type": "image/webp",
     "etag": "\"ac8c4-jhwdLKOY/ddAEJlGEp1SCoeX6Y0\"",
-    "mtime": "2025-10-05T16:02:54.442Z",
+    "mtime": "2025-10-05T23:53:38.154Z",
     "size": 706756,
     "path": "../public/static/img/preverbs/you-cant-judge-a-book-by-its-cover.webp"
   },
   "/static/img/preverbs/you-reap-what-you-sow.jpeg": {
     "type": "image/jpeg",
     "etag": "\"20475-1NXJhxTfD2ofR0/5+LXIwcjI5uI\"",
-    "mtime": "2025-10-05T16:02:54.441Z",
+    "mtime": "2025-10-05T23:53:38.153Z",
     "size": 132213,
     "path": "../public/static/img/preverbs/you-reap-what-you-sow.jpeg"
-  },
-  "/_nuxt/builds/meta/b4bb2b9b-72bc-4082-9ad7-82ccdf009b3e.json": {
-    "type": "application/json",
-    "etag": "\"c4-NW2zlshG3n1dcUxWNBV1lROnZU8\"",
-    "mtime": "2025-10-05T16:02:54.426Z",
-    "size": 196,
-    "path": "../public/_nuxt/builds/meta/b4bb2b9b-72bc-4082-9ad7-82ccdf009b3e.json"
   },
   "/static/img/words/barbecue.webp": {
     "type": "image/webp",
     "etag": "\"7b4fa-wu1GTXcsfik54X4Fcg5jWAiyGAs\"",
-    "mtime": "2025-10-05T16:02:54.439Z",
+    "mtime": "2025-10-05T23:53:38.154Z",
     "size": 505082,
     "path": "../public/static/img/words/barbecue.webp"
   },
   "/static/img/words/black-death-mask.png": {
     "type": "image/png",
     "etag": "\"1367f4-U30oODKDBdPJiLNWmVK06O3nQ7g\"",
-    "mtime": "2025-10-05T16:02:54.442Z",
+    "mtime": "2025-10-05T23:53:38.156Z",
     "size": 1271796,
     "path": "../public/static/img/words/black-death-mask.png"
   },
   "/static/img/words/boycott.webp": {
     "type": "image/webp",
     "etag": "\"1a66a-PYtfs16FDfUGfdAR8JFsqmDbZ0E\"",
-    "mtime": "2025-10-05T16:02:54.441Z",
+    "mtime": "2025-10-05T23:53:38.153Z",
     "size": 108138,
     "path": "../public/static/img/words/boycott.webp"
   },
   "/static/img/words/bucolic.jpeg": {
     "type": "image/jpeg",
     "etag": "\"13cb9-5treG2dkdjpkiLy1ZKkg5FMRQwI\"",
-    "mtime": "2025-10-05T16:02:54.441Z",
+    "mtime": "2025-10-05T23:53:38.154Z",
     "size": 81081,
     "path": "../public/static/img/words/bucolic.jpeg"
   },
   "/static/img/words/cinephile.jpeg": {
     "type": "image/jpeg",
     "etag": "\"1f2a9-mwATl5GV00QxyZA07oyle8rqZz4\"",
-    "mtime": "2025-10-05T16:02:54.442Z",
+    "mtime": "2025-10-05T23:53:38.154Z",
     "size": 127657,
     "path": "../public/static/img/words/cinephile.jpeg"
   },
   "/static/img/words/ephemeral.jpeg": {
     "type": "image/jpeg",
     "etag": "\"7a7f-mEaTyvpPg6r9Yrgm0htTr8MPfdw\"",
-    "mtime": "2025-10-05T16:02:54.442Z",
+    "mtime": "2025-10-05T23:53:38.154Z",
     "size": 31359,
     "path": "../public/static/img/words/ephemeral.jpeg"
   },
   "/static/img/words/eternal.jpeg": {
     "type": "image/jpeg",
     "etag": "\"d858-GhfI1td+Erhl19d5PbJupT5sHlI\"",
-    "mtime": "2025-10-05T16:02:54.443Z",
+    "mtime": "2025-10-05T23:53:38.154Z",
     "size": 55384,
     "path": "../public/static/img/words/eternal.jpeg"
   },
   "/static/img/words/shrinkflation.webp": {
     "type": "image/webp",
     "etag": "\"30ac6-K+By+lVjSju6U1VquoQg+dqqTiM\"",
-    "mtime": "2025-10-05T16:02:54.442Z",
+    "mtime": "2025-10-05T23:53:38.155Z",
     "size": 199366,
     "path": "../public/static/img/words/shrinkflation.webp"
   },
   "/static/img/words/soccer.webp": {
     "type": "image/webp",
     "etag": "\"6862a-swsqkAmoD49ncD1RxVYqZqolRAY\"",
-    "mtime": "2025-10-05T16:02:54.443Z",
+    "mtime": "2025-10-05T23:53:38.155Z",
     "size": 427562,
     "path": "../public/static/img/words/soccer.webp"
   },
   "/static/img/words/vellichor.webp": {
     "type": "image/webp",
     "etag": "\"63346-whSgo8ZpDOrWy1KGc/jwi0Ftjgo\"",
-    "mtime": "2025-10-05T16:02:54.442Z",
+    "mtime": "2025-10-05T23:53:38.155Z",
     "size": 406342,
     "path": "../public/static/img/words/vellichor.webp"
   },
   "/static/img/authors/abraham-lincoln.jpeg": {
     "type": "image/jpeg",
     "etag": "\"76fc-g5bfl/JHpN+MrrrunfUEEhCLpW4\"",
-    "mtime": "2025-10-05T16:02:54.443Z",
+    "mtime": "2025-10-05T23:53:38.155Z",
     "size": 30460,
     "path": "../public/static/img/authors/abraham-lincoln.jpeg"
   },
   "/static/img/authors/albert-camus.jpg": {
     "type": "image/jpeg",
     "etag": "\"10fca-YQQhHpMJZaDD7UG1BwOQXw536k8\"",
-    "mtime": "2025-10-05T16:02:54.439Z",
+    "mtime": "2025-10-05T23:53:38.155Z",
     "size": 69578,
     "path": "../public/static/img/authors/albert-camus.jpg"
   },
   "/static/img/authors/albert-einstein.jpg": {
     "type": "image/jpeg",
     "etag": "\"75d9-JKfI7Tx9xnX8pZKKAFIf1Q5cgjc\"",
-    "mtime": "2025-10-05T16:02:54.443Z",
+    "mtime": "2025-10-05T23:53:38.155Z",
     "size": 30169,
     "path": "../public/static/img/authors/albert-einstein.jpg"
   },
   "/static/img/authors/alexander-graham-bell.jpeg": {
     "type": "image/jpeg",
     "etag": "\"232f6-tLKT8lZ6o4c5vMLHc41IVvEajPk\"",
-    "mtime": "2025-10-05T16:02:54.443Z",
+    "mtime": "2025-10-05T23:53:38.156Z",
     "size": 144118,
     "path": "../public/static/img/authors/alexander-graham-bell.jpeg"
   },
   "/static/img/authors/alexander-pushkin.jpeg": {
     "type": "image/jpeg",
     "etag": "\"65d7-y8yZJg+MGlmRFiPthUeV3dt8mao\"",
-    "mtime": "2025-10-05T16:02:54.443Z",
+    "mtime": "2025-10-05T23:53:38.153Z",
     "size": 26071,
     "path": "../public/static/img/authors/alexander-pushkin.jpeg"
   },
   "/static/img/authors/amelia-barr.jpeg": {
     "type": "image/jpeg",
     "etag": "\"2bac8-zM82Vf43n1aVyC4LtKpzOXjFMmI\"",
-    "mtime": "2025-10-05T16:02:54.444Z",
+    "mtime": "2025-10-05T23:53:38.155Z",
     "size": 178888,
     "path": "../public/static/img/authors/amelia-barr.jpeg"
   },
   "/static/img/authors/anton-chekhov.jpeg": {
     "type": "image/jpeg",
     "etag": "\"14d94-eFan+ff5sA2MKpOSfvQCmxZqsRw\"",
-    "mtime": "2025-10-05T16:02:54.443Z",
+    "mtime": "2025-10-05T23:53:38.156Z",
     "size": 85396,
     "path": "../public/static/img/authors/anton-chekhov.jpeg"
   },
   "/static/img/authors/aristotle.jpeg": {
     "type": "image/jpeg",
     "etag": "\"fe17-a7ig1fS+nwSHhyTK5jj2qp52dyk\"",
-    "mtime": "2025-10-05T16:02:54.443Z",
+    "mtime": "2025-10-05T23:53:38.155Z",
     "size": 65047,
     "path": "../public/static/img/authors/aristotle.jpeg"
   },
   "/static/img/authors/arthur-schopenhauer.jpeg": {
     "type": "image/jpeg",
     "etag": "\"15f0c-AHXqy3OrZ94PIkUmOIsVnOBY7jE\"",
-    "mtime": "2025-10-05T16:02:54.443Z",
+    "mtime": "2025-10-05T23:53:38.156Z",
     "size": 89868,
     "path": "../public/static/img/authors/arthur-schopenhauer.jpeg"
   },
   "/static/img/authors/baruch-spinoza.jpeg": {
     "type": "image/jpeg",
     "etag": "\"1209d-lGWju/DuWyXmmyjcOURKcTtC1SE\"",
-    "mtime": "2025-10-05T16:02:54.443Z",
+    "mtime": "2025-10-05T23:53:38.157Z",
     "size": 73885,
     "path": "../public/static/img/authors/baruch-spinoza.jpeg"
   },
   "/static/img/authors/benjamin-franklin.jpeg": {
     "type": "image/jpeg",
     "etag": "\"ef1c-ycEW3wDiOUTuznb/qLH899Eko80\"",
-    "mtime": "2025-10-05T16:02:54.443Z",
+    "mtime": "2025-10-05T23:53:38.156Z",
     "size": 61212,
     "path": "../public/static/img/authors/benjamin-franklin.jpeg"
   },
   "/static/img/authors/bernard-baruch.jpeg": {
     "type": "image/jpeg",
     "etag": "\"26aab-P3/r09Vx1YoSLMKtFudlLXPhy6k\"",
-    "mtime": "2025-10-05T16:02:54.444Z",
+    "mtime": "2025-10-05T23:53:38.156Z",
     "size": 158379,
     "path": "../public/static/img/authors/bernard-baruch.jpeg"
   },
   "/static/img/authors/bob-marley.jpeg": {
     "type": "image/jpeg",
     "etag": "\"cd39-nj1m0ZnxN1MLAIcRu0DS3lkZ4iI\"",
-    "mtime": "2025-10-05T16:02:54.444Z",
+    "mtime": "2025-10-05T23:53:38.157Z",
     "size": 52537,
     "path": "../public/static/img/authors/bob-marley.jpeg"
   },
   "/static/img/authors/bruce-lee.jpeg": {
     "type": "image/jpeg",
     "etag": "\"4c83-nLas+sbBDQrXjsQaVFDCYBpHjr4\"",
-    "mtime": "2025-10-05T16:02:54.443Z",
+    "mtime": "2025-10-05T23:53:38.157Z",
     "size": 19587,
     "path": "../public/static/img/authors/bruce-lee.jpeg"
   },
   "/static/img/authors/buddha.jpeg": {
     "type": "image/jpeg",
     "etag": "\"1c103-8SDravttOe1p10+FFl0Th3hUfwA\"",
-    "mtime": "2025-10-05T16:02:54.444Z",
+    "mtime": "2025-10-05T23:53:38.157Z",
     "size": 114947,
     "path": "../public/static/img/authors/buddha.jpeg"
   },
   "/static/img/authors/charles-dickens.jpeg": {
     "type": "image/jpeg",
     "etag": "\"5170c-tiNnhM00wpVg29ow5Gj85TXnG5s\"",
-    "mtime": "2025-10-05T16:02:54.444Z",
+    "mtime": "2025-10-05T23:53:38.157Z",
     "size": 333580,
     "path": "../public/static/img/authors/charles-dickens.jpeg"
   },
   "/static/img/authors/charlie-chaplin.jpg": {
     "type": "image/jpeg",
     "etag": "\"3aa45-KzsrX4c/a+1oRqvakGDef1wKXZA\"",
-    "mtime": "2025-10-05T16:02:54.444Z",
+    "mtime": "2025-10-05T23:53:38.156Z",
     "size": 240197,
     "path": "../public/static/img/authors/charlie-chaplin.jpg"
   },
   "/static/img/authors/domenico-fetti-archimedes.jpeg": {
     "type": "image/jpeg",
     "etag": "\"5671a-5H8SGhFfoGLazUUm7dKefjppJV8\"",
-    "mtime": "2025-10-05T16:02:54.444Z",
+    "mtime": "2025-10-05T23:53:38.157Z",
     "size": 354074,
     "path": "../public/static/img/authors/domenico-fetti-archimedes.jpeg"
   },
   "/static/img/authors/eleanor-roosevelt.jpeg": {
     "type": "image/jpeg",
     "etag": "\"bfe8-w/a+WVgzKGmD7w7rdVyk9EnMbYg\"",
-    "mtime": "2025-10-05T16:02:54.445Z",
+    "mtime": "2025-10-05T23:53:38.157Z",
     "size": 49128,
     "path": "../public/static/img/authors/eleanor-roosevelt.jpeg"
   },
   "/static/img/authors/ernest-hemingway.jpeg": {
     "type": "image/jpeg",
     "etag": "\"4459f-CZNIcXV8GhzdnDZ9Tjt9VJG6kJA\"",
-    "mtime": "2025-10-05T16:02:54.445Z",
+    "mtime": "2025-10-05T23:53:38.158Z",
     "size": 279967,
     "path": "../public/static/img/authors/ernest-hemingway.jpeg"
   },
   "/static/img/authors/frank-sinatra.jpeg": {
     "type": "image/jpeg",
     "etag": "\"e175-6etJfn96XPU59pd47lKv/gDje8I\"",
-    "mtime": "2025-10-05T16:02:54.445Z",
+    "mtime": "2025-10-05T23:53:38.158Z",
     "size": 57717,
     "path": "../public/static/img/authors/frank-sinatra.jpeg"
   },
   "/static/img/authors/franz-kafka.jpeg": {
     "type": "image/jpeg",
     "etag": "\"4baf-G19QLsgBbhfX1BvbeZHYfg3Cm/Q\"",
-    "mtime": "2025-10-05T16:02:54.444Z",
+    "mtime": "2025-10-05T23:53:38.157Z",
     "size": 19375,
     "path": "../public/static/img/authors/franz-kafka.jpeg"
   },
   "/static/img/authors/frida-kahlo.jpeg": {
     "type": "image/jpeg",
     "etag": "\"11bfe-WAb9pGw1eveYtjpx0YhqproUpMc\"",
-    "mtime": "2025-10-05T16:02:54.444Z",
+    "mtime": "2025-10-05T23:53:38.158Z",
     "size": 72702,
     "path": "../public/static/img/authors/frida-kahlo.jpeg"
   },
   "/static/img/authors/friedrich-nietzsche.jpeg": {
     "type": "image/jpeg",
     "etag": "\"13d60-YkjZaWTPqsgdwdN6YtNIoszCAyg\"",
-    "mtime": "2025-10-05T16:02:54.445Z",
+    "mtime": "2025-10-05T23:53:38.158Z",
     "size": 81248,
     "path": "../public/static/img/authors/friedrich-nietzsche.jpeg"
   },
   "/static/img/authors/fyodor-dostoevsky.jpeg": {
     "type": "image/jpeg",
     "etag": "\"561c-Vw86PVXhiSV74TR1TFqOsAK2ync\"",
-    "mtime": "2025-10-05T16:02:54.445Z",
+    "mtime": "2025-10-05T23:53:38.158Z",
     "size": 22044,
     "path": "../public/static/img/authors/fyodor-dostoevsky.jpeg"
   },
   "/static/img/authors/galileo-galilei.jpeg": {
     "type": "image/jpeg",
     "etag": "\"7591-F2uEl2oTz9GKPNu1r/e1trNeHzU\"",
-    "mtime": "2025-10-05T16:02:54.445Z",
+    "mtime": "2025-10-05T23:53:38.158Z",
     "size": 30097,
     "path": "../public/static/img/authors/galileo-galilei.jpeg"
   },
   "/static/img/authors/george-orwell.jpeg": {
     "type": "image/jpeg",
     "etag": "\"164b4-hw3AX+WYefzxhgaomJi9S3Feccw\"",
-    "mtime": "2025-10-05T16:02:54.445Z",
+    "mtime": "2025-10-05T23:53:38.158Z",
     "size": 91316,
     "path": "../public/static/img/authors/george-orwell.jpeg"
   },
   "/static/img/authors/george-washington.jpeg": {
     "type": "image/jpeg",
     "etag": "\"a86f-ur7VGpJPQxzmrD+monrkekId9/o\"",
-    "mtime": "2025-10-05T16:02:54.445Z",
+    "mtime": "2025-10-05T23:53:38.158Z",
     "size": 43119,
     "path": "../public/static/img/authors/george-washington.jpeg"
   },
   "/static/img/authors/guy-de-maupassant.jpg": {
     "type": "image/jpeg",
     "etag": "\"32871-zXEg3gYg/22y+Gc84h9aw5ERkS0\"",
-    "mtime": "2025-10-05T16:02:54.445Z",
+    "mtime": "2025-10-05T23:53:38.158Z",
     "size": 206961,
     "path": "../public/static/img/authors/guy-de-maupassant.jpg"
   },
   "/static/img/authors/helen-keller.jpeg": {
     "type": "image/jpeg",
     "etag": "\"12d8a-TN7XKDaz6Zu+VBlhCMahObPenrk\"",
-    "mtime": "2025-10-05T16:02:54.445Z",
+    "mtime": "2025-10-05T23:53:38.159Z",
     "size": 77194,
     "path": "../public/static/img/authors/helen-keller.jpeg"
   },
   "/static/img/authors/henry-ford.jpeg": {
     "type": "image/jpeg",
     "etag": "\"18162-k5lHeie6ByNo0lOqcgZArrYE3kU\"",
-    "mtime": "2025-10-05T16:02:54.445Z",
+    "mtime": "2025-10-05T23:53:38.159Z",
     "size": 98658,
     "path": "../public/static/img/authors/henry-ford.jpeg"
   },
   "/static/img/authors/hermann-hesse.jpeg": {
     "type": "image/jpeg",
     "etag": "\"cd8e-0itqqF9x90ynvVLrJuf+SElGmeI\"",
-    "mtime": "2025-10-05T16:02:54.445Z",
+    "mtime": "2025-10-05T23:53:38.158Z",
     "size": 52622,
     "path": "../public/static/img/authors/hermann-hesse.jpeg"
   },
   "/static/img/authors/immanuel-kant.jpeg": {
     "type": "image/jpeg",
     "etag": "\"108a4-diVD2EoTmtcQ8Wq+rK39JCn06DM\"",
-    "mtime": "2025-10-05T16:02:54.445Z",
+    "mtime": "2025-10-05T23:53:38.158Z",
     "size": 67748,
     "path": "../public/static/img/authors/immanuel-kant.jpeg"
   },
   "/static/img/authors/isaac-newton.jpeg": {
     "type": "image/jpeg",
     "etag": "\"b63e-iyCRz0dIpz2fT/jRUuZPSBEpqJM\"",
-    "mtime": "2025-10-05T16:02:54.445Z",
+    "mtime": "2025-10-05T23:53:38.159Z",
     "size": 46654,
     "path": "../public/static/img/authors/isaac-newton.jpeg"
   },
   "/static/img/authors/jack-london.jpg": {
     "type": "image/jpeg",
     "etag": "\"11445-Quk4oyURyuVZ4fE23NcRvBb6M2E\"",
-    "mtime": "2025-10-05T16:02:54.446Z",
+    "mtime": "2025-10-05T23:53:38.159Z",
     "size": 70725,
     "path": "../public/static/img/authors/jack-london.jpg"
   },
   "/static/img/authors/jim-rohn.png": {
     "type": "image/png",
     "etag": "\"2ae5a-G5JbFXlQZ8sNS9O2FWheKfb1KkQ\"",
-    "mtime": "2025-10-05T16:02:54.446Z",
+    "mtime": "2025-10-05T23:53:38.159Z",
     "size": 175706,
     "path": "../public/static/img/authors/jim-rohn.png"
   },
   "/static/img/authors/john-f-kennedy.jpeg": {
     "type": "image/jpeg",
     "etag": "\"13a9a-TguLSqSTzOQhyqe0tj4CJffRnmc\"",
-    "mtime": "2025-10-05T16:02:54.446Z",
+    "mtime": "2025-10-05T23:53:38.160Z",
     "size": 80538,
     "path": "../public/static/img/authors/john-f-kennedy.jpeg"
   },
   "/static/img/authors/josef-stalin.jpeg": {
     "type": "image/jpeg",
     "etag": "\"1e1b6-uK6i21cK7MzRdZQxc+Ecx9hKQCY\"",
-    "mtime": "2025-10-05T16:02:54.447Z",
+    "mtime": "2025-10-05T23:53:38.159Z",
     "size": 123318,
     "path": "../public/static/img/authors/josef-stalin.jpeg"
   },
   "/static/img/authors/julius-caesar.jpeg": {
     "type": "image/jpeg",
     "etag": "\"15016-IjH2t6htHqaWRPDtha8Mq7qmGzc\"",
-    "mtime": "2025-10-05T16:02:54.446Z",
+    "mtime": "2025-10-05T23:53:38.159Z",
     "size": 86038,
     "path": "../public/static/img/authors/julius-caesar.jpeg"
   },
   "/static/img/authors/karl-marx.jpeg": {
     "type": "image/jpeg",
     "etag": "\"bedf-0rL2THhjJYifMcy5CkNQiE0ZRK0\"",
-    "mtime": "2025-10-05T16:02:54.447Z",
+    "mtime": "2025-10-05T23:53:38.160Z",
     "size": 48863,
     "path": "../public/static/img/authors/karl-marx.jpeg"
   },
   "/static/img/authors/leo-tolstoy.jpeg": {
     "type": "image/jpeg",
     "etag": "\"6d63-PsjsxfWCddQGte4gCxPQs3kiIoo\"",
-    "mtime": "2025-10-05T16:02:54.446Z",
+    "mtime": "2025-10-05T23:53:38.160Z",
     "size": 28003,
     "path": "../public/static/img/authors/leo-tolstoy.jpeg"
   },
   "/static/img/authors/leonardo-da-vinci.jpeg": {
     "type": "image/jpeg",
     "etag": "\"10846-RSJNVhMOfPBQV0HFNzqJjHOB1FU\"",
-    "mtime": "2025-10-05T16:02:54.447Z",
+    "mtime": "2025-10-05T23:53:38.160Z",
     "size": 67654,
     "path": "../public/static/img/authors/leonardo-da-vinci.jpeg"
   },
   "/static/img/authors/malcolm-x.jpg": {
     "type": "image/jpeg",
     "etag": "\"25080-dkdVdMqTcP6pzPBiNvljYwygvO8\"",
-    "mtime": "2025-10-05T16:02:54.447Z",
+    "mtime": "2025-10-05T23:53:38.160Z",
     "size": 151680,
     "path": "../public/static/img/authors/malcolm-x.jpg"
   },
   "/static/img/authors/mamatha-gandhi.jpeg": {
     "type": "image/jpeg",
     "etag": "\"e527-1aNvwxUWycjRkT3OTIAR1O4J8wA\"",
-    "mtime": "2025-10-05T16:02:54.446Z",
+    "mtime": "2025-10-05T23:53:38.160Z",
     "size": 58663,
     "path": "../public/static/img/authors/mamatha-gandhi.jpeg"
   },
   "/static/img/authors/marie-curie.jpg": {
     "type": "image/jpeg",
     "etag": "\"149ab-CYJhWhIzOvrNsHXAIFsdXT42A2I\"",
-    "mtime": "2025-10-05T16:02:54.447Z",
+    "mtime": "2025-10-05T23:53:38.159Z",
     "size": 84395,
     "path": "../public/static/img/authors/marie-curie.jpg"
   },
   "/static/img/authors/mark-twain.jpeg": {
     "type": "image/jpeg",
     "etag": "\"87ed-4WIOS+dzVa0ChbAHzBe20p/Fg20\"",
-    "mtime": "2025-10-05T16:02:54.447Z",
+    "mtime": "2025-10-05T23:53:38.160Z",
     "size": 34797,
     "path": "../public/static/img/authors/mark-twain.jpeg"
   },
   "/static/img/authors/martin-luther-king-jr.jpg": {
     "type": "image/jpeg",
     "etag": "\"1ceac-Rh6tsRN2bNTet19sO4Txu8KPNPw\"",
-    "mtime": "2025-10-05T16:02:54.446Z",
+    "mtime": "2025-10-05T23:53:38.160Z",
     "size": 118444,
     "path": "../public/static/img/authors/martin-luther-king-jr.jpg"
   },
   "/static/img/authors/max-weber.jpeg": {
     "type": "image/jpeg",
     "etag": "\"90f9-R1KM6E1qcP6XD/1reOuwro5+QoM\"",
-    "mtime": "2025-10-05T16:02:54.447Z",
+    "mtime": "2025-10-05T23:53:38.161Z",
     "size": 37113,
     "path": "../public/static/img/authors/max-weber.jpeg"
   },
   "/static/img/authors/maxim-gorky.jpg": {
     "type": "image/jpeg",
     "etag": "\"5381-9QkEypbylqS9OE6BNY4tdA3cJ3o\"",
-    "mtime": "2025-10-05T16:02:54.447Z",
+    "mtime": "2025-10-05T23:53:38.160Z",
     "size": 21377,
     "path": "../public/static/img/authors/maxim-gorky.jpg"
   },
   "/static/img/authors/michel-de-montaigne.jpeg": {
     "type": "image/jpeg",
     "etag": "\"55e5-rLtTPuelijdqfWDt6PWdKLkpbvY\"",
-    "mtime": "2025-10-05T16:02:54.447Z",
+    "mtime": "2025-10-05T23:53:38.161Z",
     "size": 21989,
     "path": "../public/static/img/authors/michel-de-montaigne.jpeg"
   },
   "/static/img/authors/muhammad-ali.jpeg": {
     "type": "image/jpeg",
     "etag": "\"4e20-AFAJSm7odZw8VLrfjnTgr/OVB0o\"",
-    "mtime": "2025-10-05T16:02:54.447Z",
+    "mtime": "2025-10-05T23:53:38.161Z",
     "size": 20000,
     "path": "../public/static/img/authors/muhammad-ali.jpeg"
   },
   "/static/img/authors/mustafa-kemal-ataturk.jpeg": {
     "type": "image/jpeg",
     "etag": "\"6287e-RBoo9eutBr0YwiitKLKXp3sIQuA\"",
-    "mtime": "2025-10-05T16:02:54.449Z",
+    "mtime": "2025-10-05T23:53:38.162Z",
     "size": 403582,
     "path": "../public/static/img/authors/mustafa-kemal-ataturk.jpeg"
   },
   "/static/img/authors/napoleon-hill.jpeg": {
     "type": "image/jpeg",
     "etag": "\"84fa-6Vy/JvNUeNxmG1tq0OQWkg4wPZo\"",
-    "mtime": "2025-10-05T16:02:54.447Z",
+    "mtime": "2025-10-05T23:53:38.160Z",
     "size": 34042,
     "path": "../public/static/img/authors/napoleon-hill.jpeg"
   },
   "/static/img/authors/nelson-mandela.jpg": {
     "type": "image/jpeg",
     "etag": "\"3383b-paGRZ5LbeSdz9JdkFfnAq4KfTIc\"",
-    "mtime": "2025-10-05T16:02:54.447Z",
+    "mtime": "2025-10-05T23:53:38.161Z",
     "size": 211003,
     "path": "../public/static/img/authors/nelson-mandela.jpg"
   },
   "/static/img/authors/nikola-tesla.jpg": {
     "type": "image/jpeg",
     "etag": "\"24cea-xvrHzoxCpdhWSWjf7rAra0YZCaA\"",
-    "mtime": "2025-10-05T16:02:54.448Z",
+    "mtime": "2025-10-05T23:53:38.161Z",
     "size": 150762,
     "path": "../public/static/img/authors/nikola-tesla.jpg"
   },
   "/static/img/authors/pablo-neruda.jpeg": {
     "type": "image/jpeg",
     "etag": "\"5435-RLu35b9pFtkzZi36HciGV8EraoA\"",
-    "mtime": "2025-10-05T16:02:54.448Z",
+    "mtime": "2025-10-05T23:53:38.161Z",
     "size": 21557,
     "path": "../public/static/img/authors/pablo-neruda.jpeg"
   },
   "/static/img/authors/pablo-picasso.jpg": {
     "type": "image/jpeg",
     "etag": "\"9730-Eeb/VZYY+lEMID3WEB3ZSD6/OdE\"",
-    "mtime": "2025-10-05T16:02:54.449Z",
+    "mtime": "2025-10-05T23:53:38.161Z",
     "size": 38704,
     "path": "../public/static/img/authors/pablo-picasso.jpg"
   },
   "/static/img/authors/plato.jpg": {
     "type": "image/jpeg",
     "etag": "\"a510-hH2BZT2MJ27NhZqIQt/xubKStXY\"",
-    "mtime": "2025-10-05T16:02:54.447Z",
+    "mtime": "2025-10-05T23:53:38.161Z",
     "size": 42256,
     "path": "../public/static/img/authors/plato.jpg"
   },
   "/static/img/authors/rene-descartes.jpeg": {
     "type": "image/jpeg",
     "etag": "\"bf7b-qqiExDb+SdE/BnqmJuIEazwtOV8\"",
-    "mtime": "2025-10-05T16:02:54.448Z",
+    "mtime": "2025-10-05T23:53:38.162Z",
     "size": 49019,
     "path": "../public/static/img/authors/rene-descartes.jpeg"
   },
   "/static/img/authors/robert-frost.jpg": {
     "type": "image/jpeg",
     "etag": "\"74c2-g9LrZXVEpkme/r4n1S5yn4U73SY\"",
-    "mtime": "2025-10-05T16:02:54.448Z",
+    "mtime": "2025-10-05T23:53:38.161Z",
     "size": 29890,
     "path": "../public/static/img/authors/robert-frost.jpg"
   },
   "/static/img/authors/salvador-dali.jpg": {
     "type": "image/jpeg",
     "etag": "\"7c73-XOrdzbHxrtivTGeuqgVjME084Ao\"",
-    "mtime": "2025-10-05T16:02:54.448Z",
+    "mtime": "2025-10-05T23:53:38.161Z",
     "size": 31859,
     "path": "../public/static/img/authors/salvador-dali.jpg"
   },
   "/static/img/authors/socrates.jpeg": {
     "type": "image/jpeg",
     "etag": "\"11117-d7OxsxfGFUbBVShNE5ZnHHm50bM\"",
-    "mtime": "2025-10-05T16:02:54.449Z",
+    "mtime": "2025-10-05T23:53:38.161Z",
     "size": 69911,
     "path": "../public/static/img/authors/socrates.jpeg"
   },
   "/static/img/authors/stephen-hawking.jpeg": {
     "type": "image/jpeg",
     "etag": "\"a53c-/TV03HyOyBeaQ0bJ1DPZmZpMhNg\"",
-    "mtime": "2025-10-05T16:02:54.448Z",
+    "mtime": "2025-10-05T23:53:38.162Z",
     "size": 42300,
     "path": "../public/static/img/authors/stephen-hawking.jpeg"
   },
   "/static/img/authors/steve-jobs.jpg": {
     "type": "image/jpeg",
     "etag": "\"320d1-onPo9lergyJ6ZkFYw51KmRBm/T4\"",
-    "mtime": "2025-10-05T16:02:54.448Z",
+    "mtime": "2025-10-05T23:53:38.161Z",
     "size": 205009,
     "path": "../public/static/img/authors/steve-jobs.jpg"
   },
   "/static/img/authors/thomas-edison.jpg": {
     "type": "image/jpeg",
     "etag": "\"43547-/450kXxAD+m8kcDLGV60avNjTqo\"",
-    "mtime": "2025-10-05T16:02:54.449Z",
+    "mtime": "2025-10-05T23:53:38.162Z",
     "size": 275783,
     "path": "../public/static/img/authors/thomas-edison.jpg"
   },
   "/static/img/authors/victor-hugo.jpeg": {
     "type": "image/jpeg",
     "etag": "\"9046-cV97YA/iKnf3odtpO8cAGlPySaA\"",
-    "mtime": "2025-10-05T16:02:54.449Z",
+    "mtime": "2025-10-05T23:53:38.162Z",
     "size": 36934,
     "path": "../public/static/img/authors/victor-hugo.jpeg"
   },
   "/static/img/authors/voltaire.jpg": {
     "type": "image/jpeg",
     "etag": "\"198d0-9al23S8v4vLEW3JEyAUynsObZsg\"",
-    "mtime": "2025-10-05T16:02:54.449Z",
+    "mtime": "2025-10-05T23:53:38.163Z",
     "size": 104656,
     "path": "../public/static/img/authors/voltaire.jpg"
   },
   "/static/img/authors/walt-disney.jpeg": {
     "type": "image/jpeg",
     "etag": "\"9874-KqYM4DnlSbbp4gbFw9Aod2Gw9Pk\"",
-    "mtime": "2025-10-05T16:02:54.449Z",
+    "mtime": "2025-10-05T23:53:38.163Z",
     "size": 39028,
     "path": "../public/static/img/authors/walt-disney.jpeg"
   },
   "/static/img/authors/walt-whitman.jpeg": {
     "type": "image/jpeg",
     "etag": "\"10cc2-r0b6gBhXZi/mKiRdN+ve+YSohrU\"",
-    "mtime": "2025-10-05T16:02:54.448Z",
+    "mtime": "2025-10-05T23:53:38.162Z",
     "size": 68802,
     "path": "../public/static/img/authors/walt-whitman.jpeg"
   },
   "/static/img/authors/william-shakespeare.jpeg": {
     "type": "image/jpeg",
     "etag": "\"6491-l4O4/W60g3wJG7TZfrzIiormCWw\"",
-    "mtime": "2025-10-05T16:02:54.448Z",
+    "mtime": "2025-10-05T23:53:38.163Z",
     "size": 25745,
     "path": "../public/static/img/authors/william-shakespeare.jpeg"
   },
   "/static/img/authors/winston-churchill.jpeg": {
     "type": "image/jpeg",
     "etag": "\"c382-fQ/dbqH0uUpyNukiwoSbykV6O6g\"",
-    "mtime": "2025-10-05T16:02:54.449Z",
+    "mtime": "2025-10-05T23:53:38.162Z",
     "size": 50050,
     "path": "../public/static/img/authors/winston-churchill.jpeg"
   },
   "/static/img/authors/wolfgang-amadeus-mozart.jpg": {
     "type": "image/jpeg",
     "etag": "\"15012-GdHj/GydnMrh4L+eTnxpUQ7t3lE\"",
-    "mtime": "2025-10-05T16:02:54.449Z",
+    "mtime": "2025-10-05T23:53:38.163Z",
     "size": 86034,
     "path": "../public/static/img/authors/wolfgang-amadeus-mozart.jpg"
+  },
+  "/_nuxt/builds/meta/3cd34e29-c6ad-4c33-9937-a339c6b67603.json": {
+    "type": "application/json",
+    "etag": "\"c4-E88GUBcQdClgwDXV7qpXsDv5v4k\"",
+    "mtime": "2025-10-05T23:53:38.139Z",
+    "size": 196,
+    "path": "../public/_nuxt/builds/meta/3cd34e29-c6ad-4c33-9937-a339c6b67603.json"
   }
 };
 
@@ -5673,7 +6098,7 @@ function cwd() {
   }
   return "/";
 }
-const resolve = function(...arguments_) {
+const resolve$1 = function(...arguments_) {
   arguments_ = arguments_.map((argument) => normalizeWindowsPath(argument));
   let resolvedPath = "";
   let resolvedAbsolute = false;
@@ -5754,8 +6179,8 @@ const isAbsolute = function(p) {
   return _IS_ABSOLUTE_RE.test(p);
 };
 const relative = function(from, to) {
-  const _from = resolve(from).replace(_ROOT_FOLDER_RE, "$1").split("/");
-  const _to = resolve(to).replace(_ROOT_FOLDER_RE, "$1").split("/");
+  const _from = resolve$1(from).replace(_ROOT_FOLDER_RE, "$1").split("/");
+  const _to = resolve$1(to).replace(_ROOT_FOLDER_RE, "$1").split("/");
   if (_to[0][1] === ":" && _from[0][1] === ":" && _from[0] !== _to[0]) {
     return _to.join("/");
   }
@@ -5779,7 +6204,7 @@ const dirname = function(p) {
 
 function readAsset (id) {
   const serverDir = dirname(fileURLToPath(globalThis._importMeta_.url));
-  return promises.readFile(resolve(serverDir, assets[id].path))
+  return promises.readFile(resolve$1(serverDir, assets[id].path))
 }
 
 const publicAssetBases = {"/_nuxt/builds/meta/":{"maxAge":31536000},"/_nuxt/builds/":{"maxAge":1},"/_scripts/":{"maxAge":31536000},"/_nuxt/":{"maxAge":31536000}};
@@ -5864,29 +6289,74 @@ const _obTYnf = eventHandler((event) => {
   return readAsset(id);
 });
 
-const _SxA8c9 = defineEventHandler(() => {});
+function getNitroOrigin(e) {
+  process.env.NITRO_SSL_CERT;
+  process.env.NITRO_SSL_KEY;
+  let host = process.env.NITRO_HOST || process.env.HOST || false;
+  let port = false;
+  let protocol = "https" ;
+  if (e) {
+    host = getRequestHost(e, { xForwardedHost: true }) || host;
+    protocol = getRequestProtocol(e, { xForwardedProto: true }) || protocol;
+  }
+  if (typeof host === "string" && host.includes(":")) {
+    port = host.split(":").pop();
+    host = host.split(":")[0] || false;
+  }
+  port = port ? `:${port}` : "";
+  return withTrailingSlash(`${protocol}://${host}${port}`);
+}
 
-const _y5Rh8f = eventHandler(async (event) => {
-  const collection = getRouterParam(event, "collection");
-  setHeader(event, "Content-Type", "text/plain");
-  const data = await useStorage().getItem(`build:content:database.compressed.mjs`) || "";
-  if (data) {
-    const lineStart = `export const ${collection} = "`;
-    const content = String(data).split("\n").find((line) => line.startsWith(lineStart));
-    if (content) {
-      return content.substring(lineStart.length, content.length - 1);
+const _dNhsiP = eventHandler(async (e) => {
+  if (e.context._initedSiteConfig)
+    return;
+  const runtimeConfig = useRuntimeConfig(e);
+  const config = runtimeConfig["nuxt-site-config"];
+  const nitroApp = useNitroApp();
+  const siteConfig = e.context.siteConfig || createSiteConfigStack({
+    debug: config.debug
+  });
+  const nitroOrigin = getNitroOrigin(e);
+  e.context.siteConfigNitroOrigin = nitroOrigin;
+  {
+    siteConfig.push({
+      _context: "nitro:init",
+      _priority: -4,
+      url: nitroOrigin
+    });
+  }
+  siteConfig.push({
+    _context: "runtimeEnv",
+    _priority: 0,
+    ...runtimeConfig.site || {},
+    ...runtimeConfig.public.site || {},
+    ...envSiteConfig(globalThis._importMeta_.env)
+    // just in-case, shouldn't be needed
+  });
+  const buildStack = config.stack || [];
+  buildStack.forEach((c) => siteConfig.push(c));
+  if (e.context._nitro.routeRules.site) {
+    siteConfig.push({
+      _context: "route-rules",
+      ...e.context._nitro.routeRules.site
+    });
+  }
+  if (config.multiTenancy) {
+    const host = parseURL(nitroOrigin).host;
+    const tenant = config.multiTenancy?.find((t) => t.hosts.includes(host));
+    if (tenant) {
+      siteConfig.push({
+        _context: `multi-tenancy:${host}`,
+        _priority: 0,
+        ...tenant.config
+      });
     }
   }
-  return await import('../build/database.compressed.mjs').then((m) => m[collection]);
+  const ctx = { siteConfig, event: e };
+  await nitroApp.hooks.callHook("site-config:init", ctx);
+  e.context.siteConfig = ctx.siteConfig;
+  e.context._initedSiteConfig = true;
 });
-
-async function decompressSQLDump(base64Str, compressionType = "gzip") {
-  const binaryData = Uint8Array.from(atob(base64Str), (c) => c.charCodeAt(0));
-  const response = new Response(new Blob([binaryData]));
-  const decompressedStream = response.body?.pipeThrough(new DecompressionStream(compressionType));
-  const text = await new Response(decompressedStream).text();
-  return JSON.parse(text);
-}
 
 const checksums = {
   "content": "v3.5.0--bgIYhpjRuV8zbHJE_CfelwKpJ_Td6YuGJwixiek8lmI"
@@ -5922,6 +6392,158 @@ const contentManifest = {
   }
 };
 
+const buildGroup = (group, type) => {
+  const conditions = group._conditions;
+  return conditions.length > 0 ? `(${conditions.join(` ${type} `)})` : "";
+};
+const collectionQueryGroup = (collection) => {
+  const conditions = [];
+  const query = {
+    // @ts-expect-error -- internal
+    _conditions: conditions,
+    where(field, operator, value) {
+      let condition;
+      switch (operator.toUpperCase()) {
+        case "IN":
+        case "NOT IN":
+          if (Array.isArray(value)) {
+            const values = value.map((val) => singleQuote(val)).join(", ");
+            condition = `"${String(field)}" ${operator.toUpperCase()} (${values})`;
+          } else {
+            throw new TypeError(`Value for ${operator} must be an array`);
+          }
+          break;
+        case "BETWEEN":
+        case "NOT BETWEEN":
+          if (Array.isArray(value) && value.length === 2) {
+            condition = `"${String(field)}" ${operator.toUpperCase()} ${singleQuote(value[0])} AND ${singleQuote(value[1])}`;
+          } else {
+            throw new Error(`Value for ${operator} must be an array with two elements`);
+          }
+          break;
+        case "IS NULL":
+        case "IS NOT NULL":
+          condition = `"${String(field)}" ${operator.toUpperCase()}`;
+          break;
+        case "LIKE":
+        case "NOT LIKE":
+          condition = `"${String(field)}" ${operator.toUpperCase()} ${singleQuote(value)}`;
+          break;
+        default:
+          condition = `"${String(field)}" ${operator} ${singleQuote(typeof value === "boolean" ? Number(value) : value)}`;
+      }
+      conditions.push(`${condition}`);
+      return query;
+    },
+    andWhere(groupFactory) {
+      const group = groupFactory(collectionQueryGroup());
+      conditions.push(buildGroup(group, "AND"));
+      return query;
+    },
+    orWhere(groupFactory) {
+      const group = groupFactory(collectionQueryGroup());
+      conditions.push(buildGroup(group, "OR"));
+      return query;
+    }
+  };
+  return query;
+};
+const collectionQueryBuilder = (collection, fetch) => {
+  const params = {
+    conditions: [],
+    selectedFields: [],
+    offset: 0,
+    limit: 0,
+    orderBy: [],
+    // Count query
+    count: {
+      field: "",
+      distinct: false
+    }
+  };
+  const query = {
+    // @ts-expect-error -- internal
+    __params: params,
+    andWhere(groupFactory) {
+      const group = groupFactory(collectionQueryGroup());
+      params.conditions.push(buildGroup(group, "AND"));
+      return query;
+    },
+    orWhere(groupFactory) {
+      const group = groupFactory(collectionQueryGroup());
+      params.conditions.push(buildGroup(group, "OR"));
+      return query;
+    },
+    path(path) {
+      return query.where("path", "=", withoutTrailingSlash(path));
+    },
+    skip(skip) {
+      params.offset = skip;
+      return query;
+    },
+    where(field, operator, value) {
+      query.andWhere((group) => group.where(String(field), operator, value));
+      return query;
+    },
+    limit(limit) {
+      params.limit = limit;
+      return query;
+    },
+    select(...fields) {
+      if (fields.length) {
+        params.selectedFields.push(...fields);
+      }
+      return query;
+    },
+    order(field, direction) {
+      params.orderBy.push(`"${String(field)}" ${direction}`);
+      return query;
+    },
+    async all() {
+      return fetch(collection, buildQuery()).then((res) => res || []);
+    },
+    async first() {
+      return fetch(collection, buildQuery({ limit: 1 })).then((res) => res[0] || null);
+    },
+    async count(field = "*", distinct = false) {
+      return fetch(collection, buildQuery({
+        count: { field: String(field), distinct }
+      })).then((m) => m[0].count);
+    }
+  };
+  function buildQuery(opts = {}) {
+    let query2 = "SELECT ";
+    if (opts?.count) {
+      query2 += `COUNT(${opts.count.distinct ? "DISTINCT " : ""}${opts.count.field}) as count`;
+    } else {
+      const fields = Array.from(new Set(params.selectedFields));
+      query2 += fields.length > 0 ? fields.map((f) => `"${String(f)}"`).join(", ") : "*";
+    }
+    query2 += ` FROM ${tables[String(collection)]}`;
+    if (params.conditions.length > 0) {
+      query2 += ` WHERE ${params.conditions.join(" AND ")}`;
+    }
+    if (params.orderBy.length > 0) {
+      query2 += ` ORDER BY ${params.orderBy.join(", ")}`;
+    } else {
+      query2 += ` ORDER BY stem ASC`;
+    }
+    const limit = opts?.limit || params.limit;
+    if (limit > 0) {
+      if (params.offset > 0) {
+        query2 += ` LIMIT ${limit} OFFSET ${params.offset}`;
+      } else {
+        query2 += ` LIMIT ${limit}`;
+      }
+    }
+    return query2;
+  }
+  return query;
+};
+function singleQuote(value) {
+  return `'${String(value).replace(/'/g, "''")}'`;
+}
+
 async function fetchDatabase(event, collection) {
   return await $fetch(`/__nuxt_content/${collection}/sql_dump.txt`, {
     context: event ? { cloudflare: event.context.cloudflare } : {},
@@ -5932,6 +6554,1834 @@ async function fetchDatabase(event, collection) {
     },
     query: { v: checksums[String(collection)], t: void 0 }
   });
+}
+async function fetchQuery(event, collection, sql) {
+  return await $fetch(`/__nuxt_content/${collection}/query`, {
+    context: event ? { cloudflare: event.context.cloudflare } : {},
+    headers: {
+      "content-type": "application/json",
+      ...event?.node?.req?.headers?.cookie ? { cookie: event.node.req.headers.cookie } : {}
+    },
+    query: { v: checksums[String(collection)], t: void 0 },
+    method: "POST",
+    body: {
+      sql
+    }
+  });
+}
+
+const queryCollection = (event, collection) => {
+  return collectionQueryBuilder(collection, (collection2, sql) => fetchQuery(event, collection2, sql));
+};
+
+const _Zd7uC2 = defineEventHandler(async (e) => {
+  const collections = [];
+  for (const collection in contentManifest) {
+    if (contentManifest[collection].fields.sitemap) {
+      collections.push(collection);
+    }
+  }
+  const contentList = [];
+  for (const collection of collections) {
+    contentList.push(
+      queryCollection(e, collection).select("path", "sitemap").where("path", "IS NOT NULL").where("sitemap", "IS NOT NULL").all()
+    );
+  }
+  const results = await Promise.all(contentList);
+  return results.flatMap((c) => {
+    return c.filter((c2) => c2.sitemap !== false && c2.path).flatMap((c2) => ({
+      loc: c2.path,
+      ...c2.sitemap || {}
+    }));
+  }).filter(Boolean);
+});
+
+const logger = createConsola({
+  defaults: {
+    tag: "@nuxt/sitemap"
+  }
+});
+const merger = createDefu((obj, key, value) => {
+  if (Array.isArray(obj[key]) && Array.isArray(value))
+    obj[key] = Array.from(/* @__PURE__ */ new Set([...obj[key], ...value]));
+  return obj[key];
+});
+function mergeOnKey(arr, key) {
+  const seen = /* @__PURE__ */ new Map();
+  let resultLength = 0;
+  const result = Array.from({ length: arr.length });
+  for (const item of arr) {
+    const k = item[key];
+    if (seen.has(k)) {
+      const existingIndex = seen.get(k);
+      result[existingIndex] = merger(item, result[existingIndex]);
+    } else {
+      seen.set(k, resultLength);
+      result[resultLength++] = item;
+    }
+  }
+  return result.slice(0, resultLength);
+}
+function splitForLocales(path, locales) {
+  const prefix = withLeadingSlash(path).split("/")[1];
+  if (locales.includes(prefix))
+    return [prefix, path.replace(`/${prefix}`, "")];
+  return [null, path];
+}
+const StringifiedRegExpPattern = /\/(.*?)\/([gimsuy]*)$/;
+function normalizeRuntimeFilters(input) {
+  return (input || []).map((rule) => {
+    if (rule instanceof RegExp || typeof rule === "string")
+      return rule;
+    const match = rule.regex.match(StringifiedRegExpPattern);
+    if (match)
+      return new RegExp(match[1], match[2]);
+    return false;
+  }).filter(Boolean);
+}
+function createPathFilter(options = {}) {
+  const urlFilter = createFilter(options);
+  return (loc) => {
+    let path = loc;
+    try {
+      path = parseURL(loc).pathname;
+    } catch {
+      return false;
+    }
+    return urlFilter(path);
+  };
+}
+function createFilter(options = {}) {
+  const include = options.include || [];
+  const exclude = options.exclude || [];
+  if (include.length === 0 && exclude.length === 0)
+    return () => true;
+  return function(path) {
+    for (const v of [{ rules: exclude, result: false }, { rules: include, result: true }]) {
+      const regexRules = v.rules.filter((r) => r instanceof RegExp);
+      if (regexRules.some((r) => r.test(path)))
+        return v.result;
+      const stringRules = v.rules.filter((r) => typeof r === "string");
+      if (stringRules.length > 0) {
+        const routes = {};
+        for (const r of stringRules) {
+          if (r === path)
+            return v.result;
+          routes[r] = true;
+        }
+        const routeRulesMatcher = toRouteMatcher(createRouter$1({ routes, strictTrailingSlash: false }));
+        if (routeRulesMatcher.matchAll(path).length > 0)
+          return Boolean(v.result);
+      }
+    }
+    return include.length === 0;
+  };
+}
+
+function xmlEscape(str) {
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+}
+function useSitemapRuntimeConfig(e) {
+  const clone = JSON.parse(JSON.stringify(useRuntimeConfig(e).sitemap));
+  for (const k in clone.sitemaps) {
+    const sitemap = clone.sitemaps[k];
+    sitemap.include = normalizeRuntimeFilters(sitemap.include);
+    sitemap.exclude = normalizeRuntimeFilters(sitemap.exclude);
+    clone.sitemaps[k] = sitemap;
+  }
+  return Object.freeze(clone);
+}
+
+function useSiteConfig(e, _options) {
+  return getSiteConfig(e, _options);
+}
+
+function resolveSitePath(pathOrUrl, options) {
+  let path = pathOrUrl;
+  if (hasProtocol(pathOrUrl, { strict: false, acceptRelative: true })) {
+    const parsed = parseURL(pathOrUrl);
+    path = parsed.pathname;
+  }
+  const base = withLeadingSlash(options.base || "/");
+  if (base !== "/" && path.startsWith(base)) {
+    path = path.slice(base.length);
+  }
+  let origin = withoutTrailingSlash(options.absolute ? options.siteUrl : "");
+  if (base !== "/" && origin.endsWith(base)) {
+    origin = origin.slice(0, origin.indexOf(base));
+  }
+  const baseWithOrigin = options.withBase ? withBase(base, origin || "/") : origin;
+  const resolvedUrl = withBase(path, baseWithOrigin);
+  return path === "/" && !options.withBase ? withTrailingSlash(resolvedUrl) : fixSlashes(options.trailingSlash, resolvedUrl);
+}
+const fileExtensions = [
+  // Images
+  "jpg",
+  "jpeg",
+  "png",
+  "gif",
+  "bmp",
+  "webp",
+  "svg",
+  "ico",
+  // Documents
+  "pdf",
+  "doc",
+  "docx",
+  "xls",
+  "xlsx",
+  "ppt",
+  "pptx",
+  "txt",
+  "md",
+  "markdown",
+  // Archives
+  "zip",
+  "rar",
+  "7z",
+  "tar",
+  "gz",
+  // Audio
+  "mp3",
+  "wav",
+  "flac",
+  "ogg",
+  "opus",
+  "m4a",
+  "aac",
+  "midi",
+  "mid",
+  // Video
+  "mp4",
+  "avi",
+  "mkv",
+  "mov",
+  "wmv",
+  "flv",
+  "webm",
+  // Web
+  "html",
+  "css",
+  "js",
+  "json",
+  "xml",
+  "tsx",
+  "jsx",
+  "ts",
+  "vue",
+  "svelte",
+  "xsl",
+  "rss",
+  "atom",
+  // Programming
+  "php",
+  "py",
+  "rb",
+  "java",
+  "c",
+  "cpp",
+  "h",
+  "go",
+  // Data formats
+  "csv",
+  "tsv",
+  "sql",
+  "yaml",
+  "yml",
+  // Fonts
+  "woff",
+  "woff2",
+  "ttf",
+  "otf",
+  "eot",
+  // Executables/Binaries
+  "exe",
+  "msi",
+  "apk",
+  "ipa",
+  "dmg",
+  "iso",
+  "bin",
+  // Scripts/Config
+  "bat",
+  "cmd",
+  "sh",
+  "env",
+  "htaccess",
+  "conf",
+  "toml",
+  "ini",
+  // Package formats
+  "deb",
+  "rpm",
+  "jar",
+  "war",
+  // E-books
+  "epub",
+  "mobi",
+  // Common temporary/backup files
+  "log",
+  "tmp",
+  "bak",
+  "old",
+  "sav"
+];
+function isPathFile(path) {
+  const lastSegment = path.split("/").pop();
+  const ext = (lastSegment || path).match(/\.[0-9a-z]+$/i)?.[0];
+  return ext && fileExtensions.includes(ext.replace(".", ""));
+}
+function fixSlashes(trailingSlash, pathOrUrl) {
+  const $url = parseURL(pathOrUrl);
+  if (isPathFile($url.pathname))
+    return pathOrUrl;
+  const fixedPath = trailingSlash ? withTrailingSlash($url.pathname) : withoutTrailingSlash($url.pathname);
+  return `${$url.protocol ? `${$url.protocol}//` : ""}${$url.host || ""}${fixedPath}${$url.search || ""}${$url.hash || ""}`;
+}
+
+function createSitePathResolver(e, options = {}) {
+  const siteConfig = getSiteConfig(e);
+  const nitroOrigin = getNitroOrigin(e);
+  const nuxtBase = useRuntimeConfig(e).app.baseURL || "/";
+  return (path) => {
+    return resolveSitePath(path, {
+      ...options,
+      siteUrl: options.canonical !== false || false ? siteConfig.url : nitroOrigin,
+      trailingSlash: siteConfig.trailingSlash,
+      base: nuxtBase
+    });
+  };
+}
+
+const _efsuET = defineEventHandler(async (e) => {
+  const fixPath = createSitePathResolver(e, { absolute: false, withBase: true });
+  const { sitemapName: fallbackSitemapName, cacheMaxAgeSeconds, version, xslColumns, xslTips } = useSitemapRuntimeConfig();
+  setHeader(e, "Content-Type", "application/xslt+xml");
+  if (cacheMaxAgeSeconds)
+    setHeader(e, "Cache-Control", `public, max-age=${cacheMaxAgeSeconds}, must-revalidate`);
+  else
+    setHeader(e, "Cache-Control", `no-cache, no-store`);
+  const { name: siteName, url: siteUrl } = useSiteConfig(e);
+  const referrer = getHeader(e, "Referer") || "/";
+  const referrerPath = parseURL(referrer).pathname;
+  const isNotIndexButHasIndex = referrerPath !== "/sitemap.xml" && referrerPath !== "/sitemap_index.xml" && referrerPath.endsWith(".xml");
+  const sitemapName = parseURL(referrer).pathname.split("/").pop()?.split("-sitemap")[0] || fallbackSitemapName;
+  const title = `${siteName}${sitemapName !== "sitemap.xml" ? ` - ${sitemapName === "sitemap_index.xml" ? "index" : sitemapName}` : ""}`.replace(/&/g, "&amp;");
+  const canonicalQuery = getQuery$1(referrer).canonical;
+  const isShowingCanonical = typeof canonicalQuery !== "undefined" && canonicalQuery !== "false";
+  const conditionalTips = [
+    'You are looking at a <a href="https://developer.mozilla.org/en-US/docs/Web/XSLT/Transforming_XML_with_XSLT/An_Overview" style="color: #398465" target="_blank">XML stylesheet</a>. Read the <a href="https://nuxtseo.com/sitemap/guides/customising-ui" style="color: #398465" target="_blank">docs</a> to learn how to customize it. View the page source to see the raw XML.',
+    `URLs missing? Check Nuxt Devtools Sitemap tab (or the <a href="${xmlEscape(withQuery("/__sitemap__/debug.json", { sitemap: sitemapName }))}" style="color: #398465" target="_blank">debug endpoint</a>).`
+  ];
+  const fetchErrors = [];
+  const xslQuery = getQuery(e);
+  if (xslQuery.error_messages) {
+    const errorMessages = xslQuery.error_messages;
+    const errorUrls = xslQuery.error_urls;
+    if (errorMessages) {
+      const messages = Array.isArray(errorMessages) ? errorMessages : [errorMessages];
+      const urls = Array.isArray(errorUrls) ? errorUrls : errorUrls ? [errorUrls] : [];
+      messages.forEach((msg, i) => {
+        const errorParts = [xmlEscape(msg)];
+        if (urls[i]) {
+          errorParts.push(xmlEscape(urls[i]));
+        }
+        fetchErrors.push(`<strong style="color: #dc2626;">Error ${i + 1}:</strong> ${errorParts.join(" - ")}`);
+      });
+    }
+  }
+  if (!isShowingCanonical) {
+    const canonicalPreviewUrl = withQuery(referrer, { canonical: "" });
+    conditionalTips.push(`Your canonical site URL is <strong>${xmlEscape(siteUrl)}</strong>.`);
+    conditionalTips.push(`You can preview your canonical sitemap by visiting <a href="${xmlEscape(canonicalPreviewUrl)}" style="color: #398465; white-space: nowrap;">${xmlEscape(fixPath(canonicalPreviewUrl))}?canonical</a>`);
+  } else {
+    conditionalTips.push(`You are viewing the canonical sitemap. You can switch to using the request origin: <a href="${xmlEscape(fixPath(referrer))}" style="color: #398465; white-space: nowrap ">${xmlEscape(fixPath(referrer))}</a>`);
+  }
+  const hasRuntimeErrors = fetchErrors.length > 0;
+  const showSidebar = hasRuntimeErrors;
+  const runtimeErrors = hasRuntimeErrors ? fetchErrors.map((t) => `<li><p>${t}</p></li>`).join("\n") : "";
+  let columns = [...xslColumns];
+  if (!columns.length) {
+    columns = [
+      { label: "URL", width: "50%" },
+      { label: "Images", width: "25%", select: "count(image:image)" },
+      { label: "Last Updated", width: "25%", select: "concat(substring(sitemap:lastmod,0,11),concat(' ', substring(sitemap:lastmod,12,5)),concat(' ', substring(sitemap:lastmod,20,6)))" }
+    ];
+  }
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="2.0"
+                xmlns:html="http://www.w3.org/TR/REC-html40"
+                xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+                xmlns:sitemap="http://www.sitemaps.org/schemas/sitemap/0.9"
+                xmlns:xhtml="http://www.w3.org/1999/xhtml"
+                xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
+                xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:output method="html" version="1.0" encoding="UTF-8" indent="yes"/>
+  <xsl:template match="/">
+    <html xmlns="http://www.w3.org/1999/xhtml">
+      <head>
+        <title>XML Sitemap</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <style type="text/css">
+          body {
+            font-family: Inter, Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            color: #333;
+          }
+
+          table {
+            border: none;
+            border-collapse: collapse;
+          }
+
+          .bg-yellow-200 {
+            background-color: #fef9c3;
+          }
+
+          .p-5 {
+            padding: 1.25rem;
+          }
+
+          .rounded {
+            border-radius: 4px;
+            }
+
+          .shadow {
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+          }
+
+          #sitemap tr:nth-child(odd) td {
+            background-color: #f8f8f8 !important;
+          }
+
+          #sitemap tbody tr:hover td {
+            background-color: #fff;
+          }
+
+          #sitemap tbody tr:hover td, #sitemap tbody tr:hover td a {
+            color: #000;
+          }
+
+          .expl a {
+            color: #398465;
+            font-weight: 600;
+          }
+
+          .expl a:visited {
+            color: #398465;
+          }
+
+          a {
+            color: #000;
+            text-decoration: none;
+          }
+
+          a:visited {
+            color: #777;
+          }
+
+          a:hover {
+            text-decoration: underline;
+          }
+
+          td {
+            font-size: 12px;
+          }
+
+          .text-2xl {
+            font-size: 2rem;
+            font-weight: 600;
+            line-height: 1.25;
+          }
+
+          th {
+            text-align: left;
+            padding-right: 30px;
+            font-size: 12px;
+          }
+
+          thead th {
+            border-bottom: 1px solid #000;
+          }
+          .fixed { position: fixed; }
+          .right-2 { right: 2rem; }
+          .top-2 { top: 2rem; }
+          .w-30 { width: 30rem; }
+          p { margin: 0; }
+          li { padding-bottom: 0.5rem; line-height: 1.5; }
+          h1 { margin: 0; }
+          .mb-5 { margin-bottom: 1.25rem; }
+          .mb-3 { margin-bottom: 0.75rem; }
+        </style>
+      </head>
+      <body>
+        <div style="grid-template-columns: 1fr 1fr; display: grid; margin: 3rem;">
+            <div>
+             <div id="content">
+          <h1 class="text-2xl mb-3">XML Sitemap</h1>
+          <h2>${xmlEscape(title)}</h2>
+          ${isNotIndexButHasIndex ? `<p style="font-size: 12px; margin-bottom: 1rem;"><a href="${xmlEscape(fixPath("/sitemap_index.xml"))}">${xmlEscape(fixPath("/sitemap_index.xml"))}</a></p>` : ""}
+          <xsl:if test="count(sitemap:sitemapindex/sitemap:sitemap) &gt; 0">
+            <p class="expl" style="margin-bottom: 1rem;">
+              This XML Sitemap Index file contains
+              <xsl:value-of select="count(sitemap:sitemapindex/sitemap:sitemap)"/> sitemaps.
+            </p>
+            <table id="sitemap" cellpadding="3">
+              <thead>
+                <tr>
+                  <th width="75%">Sitemap</th>
+                  <th width="25%">Last Modified</th>
+                </tr>
+              </thead>
+              <tbody>
+                <xsl:for-each select="sitemap:sitemapindex/sitemap:sitemap">
+                  <xsl:variable name="sitemapURL">
+                    <xsl:value-of select="sitemap:loc"/>
+                  </xsl:variable>
+                  <tr>
+                    <td>
+                      <a href="{$sitemapURL}">
+                        <xsl:value-of select="sitemap:loc"/>
+                      </a>
+                    </td>
+                    <td>
+                      <xsl:value-of
+                        select="concat(substring(sitemap:lastmod,0,11),concat(' ', substring(sitemap:lastmod,12,5)),concat(' ', substring(sitemap:lastmod,20,6)))"/>
+                    </td>
+                  </tr>
+                </xsl:for-each>
+              </tbody>
+            </table>
+          </xsl:if>
+          <xsl:if test="count(sitemap:sitemapindex/sitemap:sitemap) &lt; 1">
+            <p class="expl" style="margin-bottom: 1rem;">
+              This XML Sitemap contains
+              <xsl:value-of select="count(sitemap:urlset/sitemap:url)"/> URLs.
+            </p>
+            <table id="sitemap" cellpadding="3">
+              <thead>
+                <tr>
+                  ${columns.map((c) => `<th width="${c.width}">${c.label}</th>`).join("\n")}
+                </tr>
+              </thead>
+              <tbody>
+                <xsl:variable name="lower" select="'abcdefghijklmnopqrstuvwxyz'"/>
+                <xsl:variable name="upper" select="'ABCDEFGHIJKLMNOPQRSTUVWXYZ'"/>
+                <xsl:for-each select="sitemap:urlset/sitemap:url">
+                  <tr>
+                    <td>
+                      <xsl:variable name="itemURL">
+                        <xsl:value-of select="sitemap:loc"/>
+                      </xsl:variable>
+                      <a href="{$itemURL}">
+                        <xsl:value-of select="sitemap:loc"/>
+                      </a>
+                    </td>
+                    ${columns.filter((c) => c.label !== "URL").map((c) => `<td>
+<xsl:value-of select="${c.select}"/>
+</td>`).join("\n")}
+                  </tr>
+                </xsl:for-each>
+              </tbody>
+            </table>
+          </xsl:if>
+        </div>
+        </div>
+                    ${showSidebar ? `<div class="w-30 top-2 shadow rounded p-5 right-2" style="margin: 0 auto;">
+                      ${""}
+                      ${hasRuntimeErrors ? `<div${""}><p><strong style="color: #dc2626;">Runtime Errors</strong></p><ul style="margin: 1rem 0; padding: 0;">${runtimeErrors}</ul></div>` : ""}
+                      ${""}
+                    </div>` : ""}
+        </div>
+      </body>
+    </html>
+  </xsl:template>
+</xsl:stylesheet>
+`;
+});
+
+function withoutQuery(path) {
+  return path.split("?")[0];
+}
+function createNitroRouteRuleMatcher() {
+  const { nitro, app } = useRuntimeConfig();
+  const _routeRulesMatcher = toRouteMatcher(
+    createRouter$1({
+      routes: Object.fromEntries(
+        Object.entries(nitro?.routeRules || {}).map(([path, rules]) => [path === "/" ? path : withoutTrailingSlash(path), rules])
+      )
+    })
+  );
+  return (pathOrUrl) => {
+    const path = pathOrUrl[0] === "/" ? pathOrUrl : parseURL(pathOrUrl, app.baseURL).pathname;
+    const pathWithoutQuery = withoutQuery(path);
+    return defu({}, ..._routeRulesMatcher.matchAll(
+      // radix3 does not support trailing slashes
+      withoutBase(pathWithoutQuery === "/" ? pathWithoutQuery : withoutTrailingSlash(pathWithoutQuery), app.baseURL)
+    ).reverse());
+  };
+}
+
+function resolve(s, resolvers) {
+  if (typeof s === "undefined" || !resolvers)
+    return s;
+  s = typeof s === "string" ? s : s.toString();
+  if (hasProtocol(s, { acceptRelative: true, strict: false }))
+    return resolvers.fixSlashes(s);
+  return resolvers.canonicalUrlResolver(s);
+}
+function removeTrailingSlash(s) {
+  return s.replace(/\/(\?|#|$)/, "$1");
+}
+function preNormalizeEntry(_e, resolvers) {
+  const e = typeof _e === "string" ? { loc: _e } : { ..._e };
+  if (e.url && !e.loc) {
+    e.loc = e.url;
+    delete e.url;
+  }
+  if (typeof e.loc !== "string") {
+    e.loc = "";
+  }
+  e.loc = removeTrailingSlash(e.loc);
+  e._abs = hasProtocol(e.loc, { acceptRelative: false, strict: false });
+  try {
+    e._path = e._abs ? parseURL(e.loc) : parsePath(e.loc);
+  } catch (e2) {
+    e2._path = null;
+  }
+  if (e._path) {
+    const query = parseQuery(e._path.search);
+    const qs = stringifyQuery(query);
+    e._relativeLoc = `${encodePath(e._path?.pathname)}${qs.length ? `?${qs}` : ""}`;
+    if (e._path.host) {
+      e.loc = stringifyParsedURL(e._path);
+    } else {
+      e.loc = e._relativeLoc;
+    }
+  } else if (!isEncoded(e.loc)) {
+    e.loc = encodeURI(e.loc);
+  }
+  if (e.loc === "")
+    e.loc = `/`;
+  e.loc = resolve(e.loc, resolvers);
+  e._key = `${e._sitemap || ""}${withoutTrailingSlash(e.loc)}`;
+  return e;
+}
+function isEncoded(url) {
+  try {
+    return url !== decodeURIComponent(url);
+  } catch {
+    return false;
+  }
+}
+function normaliseEntry(_e, defaults, resolvers) {
+  const e = defu(_e, defaults);
+  if (e.lastmod) {
+    const date = normaliseDate(e.lastmod);
+    if (date)
+      e.lastmod = date;
+    else
+      delete e.lastmod;
+  }
+  if (!e.lastmod)
+    delete e.lastmod;
+  e.loc = resolve(e.loc, resolvers);
+  if (e.alternatives) {
+    const alternatives = e.alternatives.map((a) => ({ ...a }));
+    for (let i = 0; i < alternatives.length; i++) {
+      const alt = alternatives[i];
+      if (typeof alt.href === "string") {
+        alt.href = resolve(alt.href, resolvers);
+      } else if (typeof alt.href === "object" && alt.href) {
+        alt.href = resolve(alt.href.href, resolvers);
+      }
+    }
+    e.alternatives = mergeOnKey(alternatives, "hreflang");
+  }
+  if (e.images) {
+    const images = e.images.map((i) => ({ ...i }));
+    for (let i = 0; i < images.length; i++) {
+      images[i].loc = resolve(images[i].loc, resolvers);
+    }
+    e.images = mergeOnKey(images, "loc");
+  }
+  if (e.videos) {
+    const videos = e.videos.map((v) => ({ ...v }));
+    for (let i = 0; i < videos.length; i++) {
+      if (videos[i].content_loc) {
+        videos[i].content_loc = resolve(videos[i].content_loc, resolvers);
+      }
+    }
+    e.videos = mergeOnKey(videos, "content_loc");
+  }
+  return e;
+}
+const IS_VALID_W3C_DATE = [
+  /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/,
+  /^\d{4}-[01]\d-[0-3]\d$/,
+  /^\d{4}-[01]\d$/,
+  /^\d{4}$/
+];
+function isValidW3CDate(d) {
+  return IS_VALID_W3C_DATE.some((r) => r.test(d));
+}
+function normaliseDate(d) {
+  if (typeof d === "string") {
+    if (d.includes("T")) {
+      const t = d.split("T")[1];
+      if (!t.includes("+") && !t.includes("-") && !t.includes("Z")) {
+        d += "Z";
+      }
+    }
+    if (!isValidW3CDate(d))
+      return false;
+    d = new Date(d);
+    d.setMilliseconds(0);
+    if (Number.isNaN(d.getTime()))
+      return false;
+  }
+  const z = (n) => `0${n}`.slice(-2);
+  const date = `${d.getUTCFullYear()}-${z(d.getUTCMonth() + 1)}-${z(d.getUTCDate())}`;
+  if (d.getUTCHours() > 0 || d.getUTCMinutes() > 0 || d.getUTCSeconds() > 0) {
+    return `${date}T${z(d.getUTCHours())}:${z(d.getUTCMinutes())}:${z(d.getUTCSeconds())}Z`;
+  }
+  return date;
+}
+
+function isValidString(value) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+function parseNumber(value) {
+  if (typeof value === "number") return value;
+  if (typeof value === "string" && value.trim()) {
+    const num = Number.parseFloat(value.trim());
+    return Number.isNaN(num) ? void 0 : num;
+  }
+  return void 0;
+}
+function parseInteger(value) {
+  if (typeof value === "number") return Math.floor(value);
+  if (typeof value === "string" && value.trim()) {
+    const num = Number.parseInt(value.trim(), 10);
+    return Number.isNaN(num) ? void 0 : num;
+  }
+  return void 0;
+}
+function extractUrlFromParsedElement(urlElement, warnings) {
+  if (!isValidString(urlElement.loc)) {
+    warnings.push({
+      type: "validation",
+      message: "URL entry missing required loc element",
+      context: { url: String(urlElement.loc || "undefined") }
+    });
+    return null;
+  }
+  const urlObj = { loc: urlElement.loc };
+  if (isValidString(urlElement.lastmod)) {
+    urlObj.lastmod = urlElement.lastmod;
+  }
+  if (isValidString(urlElement.changefreq)) {
+    const validFreqs = ["always", "hourly", "daily", "weekly", "monthly", "yearly", "never"];
+    if (validFreqs.includes(urlElement.changefreq)) {
+      urlObj.changefreq = urlElement.changefreq;
+    } else {
+      warnings.push({
+        type: "validation",
+        message: "Invalid changefreq value",
+        context: { url: urlElement.loc, field: "changefreq", value: urlElement.changefreq }
+      });
+    }
+  }
+  const priority = parseNumber(urlElement.priority);
+  if (priority !== void 0 && !Number.isNaN(priority)) {
+    if (priority < 0 || priority > 1) {
+      warnings.push({
+        type: "validation",
+        message: "Priority value should be between 0.0 and 1.0, clamping to valid range",
+        context: { url: urlElement.loc, field: "priority", value: priority }
+      });
+    }
+    urlObj.priority = Math.max(0, Math.min(1, priority));
+  } else if (urlElement.priority !== void 0) {
+    warnings.push({
+      type: "validation",
+      message: "Invalid priority value",
+      context: { url: urlElement.loc, field: "priority", value: urlElement.priority }
+    });
+  }
+  if (urlElement.image) {
+    const images = Array.isArray(urlElement.image) ? urlElement.image : [urlElement.image];
+    const validImages = images.map((img) => {
+      if (isValidString(img.loc)) {
+        return { loc: img.loc };
+      } else {
+        warnings.push({
+          type: "validation",
+          message: "Image missing required loc element",
+          context: { url: urlElement.loc, field: "image.loc" }
+        });
+        return null;
+      }
+    }).filter((img) => img !== null);
+    if (validImages.length > 0) {
+      urlObj.images = validImages;
+    }
+  }
+  if (urlElement.video) {
+    const videos = Array.isArray(urlElement.video) ? urlElement.video : [urlElement.video];
+    const validVideos = videos.map((video) => {
+      const missingFields = [];
+      if (!isValidString(video.title)) missingFields.push("title");
+      if (!isValidString(video.thumbnail_loc)) missingFields.push("thumbnail_loc");
+      if (!isValidString(video.description)) missingFields.push("description");
+      if (!isValidString(video.content_loc)) missingFields.push("content_loc");
+      if (missingFields.length > 0) {
+        warnings.push({
+          type: "validation",
+          message: `Video missing required fields: ${missingFields.join(", ")}`,
+          context: { url: urlElement.loc, field: "video" }
+        });
+        return null;
+      }
+      const videoObj = {
+        title: video.title,
+        thumbnail_loc: video.thumbnail_loc,
+        description: video.description,
+        content_loc: video.content_loc
+      };
+      if (isValidString(video.player_loc)) {
+        videoObj.player_loc = video.player_loc;
+      }
+      const duration = parseInteger(video.duration);
+      if (duration !== void 0) {
+        videoObj.duration = duration;
+      } else if (video.duration !== void 0) {
+        warnings.push({
+          type: "validation",
+          message: "Invalid video duration value",
+          context: { url: urlElement.loc, field: "video.duration", value: video.duration }
+        });
+      }
+      if (isValidString(video.expiration_date)) {
+        videoObj.expiration_date = video.expiration_date;
+      }
+      const rating = parseNumber(video.rating);
+      if (rating !== void 0) {
+        if (rating < 0 || rating > 5) {
+          warnings.push({
+            type: "validation",
+            message: "Video rating should be between 0.0 and 5.0",
+            context: { url: urlElement.loc, field: "video.rating", value: rating }
+          });
+        }
+        videoObj.rating = rating;
+      } else if (video.rating !== void 0) {
+        warnings.push({
+          type: "validation",
+          message: "Invalid video rating value",
+          context: { url: urlElement.loc, field: "video.rating", value: video.rating }
+        });
+      }
+      const viewCount = parseInteger(video.view_count);
+      if (viewCount !== void 0) {
+        videoObj.view_count = viewCount;
+      } else if (video.view_count !== void 0) {
+        warnings.push({
+          type: "validation",
+          message: "Invalid video view_count value",
+          context: { url: urlElement.loc, field: "video.view_count", value: video.view_count }
+        });
+      }
+      if (isValidString(video.publication_date)) {
+        videoObj.publication_date = video.publication_date;
+      }
+      if (isValidString(video.family_friendly)) {
+        const validValues = ["yes", "no"];
+        if (validValues.includes(video.family_friendly)) {
+          videoObj.family_friendly = video.family_friendly;
+        } else {
+          warnings.push({
+            type: "validation",
+            message: 'Invalid video family_friendly value, should be "yes" or "no"',
+            context: { url: urlElement.loc, field: "video.family_friendly", value: video.family_friendly }
+          });
+        }
+      }
+      if (isValidString(video.requires_subscription)) {
+        const validValues = ["yes", "no"];
+        if (validValues.includes(video.requires_subscription)) {
+          videoObj.requires_subscription = video.requires_subscription;
+        } else {
+          warnings.push({
+            type: "validation",
+            message: 'Invalid video requires_subscription value, should be "yes" or "no"',
+            context: { url: urlElement.loc, field: "video.requires_subscription", value: video.requires_subscription }
+          });
+        }
+      }
+      if (isValidString(video.live)) {
+        const validValues = ["yes", "no"];
+        if (validValues.includes(video.live)) {
+          videoObj.live = video.live;
+        } else {
+          warnings.push({
+            type: "validation",
+            message: 'Invalid video live value, should be "yes" or "no"',
+            context: { url: urlElement.loc, field: "video.live", value: video.live }
+          });
+        }
+      }
+      if (video.restriction && typeof video.restriction === "object") {
+        const restriction = video.restriction;
+        if (isValidString(restriction.relationship) && isValidString(restriction["#text"])) {
+          const validRelationships = ["allow", "deny"];
+          if (validRelationships.includes(restriction.relationship)) {
+            videoObj.restriction = {
+              relationship: restriction.relationship,
+              restriction: restriction["#text"]
+            };
+          } else {
+            warnings.push({
+              type: "validation",
+              message: 'Invalid video restriction relationship, should be "allow" or "deny"',
+              context: { url: urlElement.loc, field: "video.restriction.relationship", value: restriction.relationship }
+            });
+          }
+        }
+      }
+      if (video.platform && typeof video.platform === "object") {
+        const platform = video.platform;
+        if (isValidString(platform.relationship) && isValidString(platform["#text"])) {
+          const validRelationships = ["allow", "deny"];
+          if (validRelationships.includes(platform.relationship)) {
+            videoObj.platform = {
+              relationship: platform.relationship,
+              platform: platform["#text"]
+            };
+          } else {
+            warnings.push({
+              type: "validation",
+              message: 'Invalid video platform relationship, should be "allow" or "deny"',
+              context: { url: urlElement.loc, field: "video.platform.relationship", value: platform.relationship }
+            });
+          }
+        }
+      }
+      if (video.price) {
+        const prices = Array.isArray(video.price) ? video.price : [video.price];
+        const validPrices = prices.map((price) => {
+          const priceValue = price["#text"];
+          if (priceValue == null || typeof priceValue !== "string" && typeof priceValue !== "number") {
+            warnings.push({
+              type: "validation",
+              message: "Video price missing value",
+              context: { url: urlElement.loc, field: "video.price" }
+            });
+            return null;
+          }
+          const validTypes = ["rent", "purchase", "package", "subscription"];
+          if (price.type && !validTypes.includes(price.type)) {
+            warnings.push({
+              type: "validation",
+              message: `Invalid video price type "${price.type}", should be one of: ${validTypes.join(", ")}`,
+              context: { url: urlElement.loc, field: "video.price.type", value: price.type }
+            });
+          }
+          return {
+            price: String(priceValue),
+            currency: price.currency,
+            type: price.type
+          };
+        }).filter((p) => p !== null);
+        if (validPrices.length > 0) {
+          videoObj.price = validPrices;
+        }
+      }
+      if (video.uploader && typeof video.uploader === "object") {
+        const uploader = video.uploader;
+        if (isValidString(uploader.info) && isValidString(uploader["#text"])) {
+          videoObj.uploader = {
+            uploader: uploader["#text"],
+            info: uploader.info
+          };
+        } else {
+          warnings.push({
+            type: "validation",
+            message: "Video uploader missing required info or name",
+            context: { url: urlElement.loc, field: "video.uploader" }
+          });
+        }
+      }
+      if (video.tag) {
+        const tags = Array.isArray(video.tag) ? video.tag : [video.tag];
+        const validTags = tags.filter(isValidString);
+        if (validTags.length > 0) {
+          videoObj.tag = validTags;
+        }
+      }
+      return videoObj;
+    }).filter((video) => video !== null);
+    if (validVideos.length > 0) {
+      urlObj.videos = validVideos;
+    }
+  }
+  if (urlElement.link) {
+    const links = Array.isArray(urlElement.link) ? urlElement.link : [urlElement.link];
+    const alternatives = links.map((link) => {
+      if (link.rel === "alternate" && isValidString(link.hreflang) && isValidString(link.href)) {
+        return {
+          hreflang: link.hreflang,
+          href: link.href
+        };
+      } else {
+        warnings.push({
+          type: "validation",
+          message: 'Alternative link missing required rel="alternate", hreflang, or href',
+          context: { url: urlElement.loc, field: "link" }
+        });
+        return null;
+      }
+    }).filter((alt) => alt !== null);
+    if (alternatives.length > 0) {
+      urlObj.alternatives = alternatives;
+    }
+  }
+  if (urlElement.news && typeof urlElement.news === "object") {
+    const news = urlElement.news;
+    if (isValidString(news.title) && isValidString(news.publication_date) && news.publication && isValidString(news.publication.name) && isValidString(news.publication.language)) {
+      urlObj.news = {
+        title: news.title,
+        publication_date: news.publication_date,
+        publication: {
+          name: news.publication.name,
+          language: news.publication.language
+        }
+      };
+    } else {
+      warnings.push({
+        type: "validation",
+        message: "News entry missing required fields (title, publication_date, publication.name, publication.language)",
+        context: { url: urlElement.loc, field: "news" }
+      });
+    }
+  }
+  const filteredUrlObj = Object.fromEntries(
+    Object.entries(urlObj).filter(
+      ([_, value]) => value != null && (!Array.isArray(value) || value.length > 0)
+    )
+  );
+  return filteredUrlObj;
+}
+async function parseSitemapXml(xml) {
+  const warnings = [];
+  if (!xml) {
+    throw new Error("Empty XML input provided");
+  }
+  const { XMLParser } = await import('fast-xml-parser');
+  const parser = new XMLParser({
+    isArray: (tagName) => ["url", "image", "video", "link", "tag", "price"].includes(tagName),
+    removeNSPrefix: true,
+    parseAttributeValue: false,
+    ignoreAttributes: false,
+    attributeNamePrefix: "",
+    trimValues: true
+  });
+  try {
+    const parsed = parser.parse(xml);
+    if (!parsed?.urlset) {
+      throw new Error("XML does not contain a valid urlset element");
+    }
+    if (!parsed.urlset.url) {
+      throw new Error("Sitemap contains no URL entries");
+    }
+    const urls = Array.isArray(parsed.urlset.url) ? parsed.urlset.url : [parsed.urlset.url];
+    const validUrls = urls.map((url) => extractUrlFromParsedElement(url, warnings)).filter((url) => url !== null);
+    if (validUrls.length === 0 && urls.length > 0) {
+      warnings.push({
+        type: "validation",
+        message: "No valid URLs found in sitemap after validation"
+      });
+    }
+    return { urls: validUrls, warnings };
+  } catch (error) {
+    if (error instanceof Error && (error.message === "Empty XML input provided" || error.message === "XML does not contain a valid urlset element" || error.message === "Sitemap contains no URL entries")) {
+      throw error;
+    }
+    throw new Error(`Failed to parse XML: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+async function tryFetchWithFallback(url, options, event) {
+  const isExternalUrl = !url.startsWith("/");
+  if (isExternalUrl) {
+    const strategies = [
+      // Strategy 1: Use globalThis.$fetch (original approach)
+      () => globalThis.$fetch(url, options),
+      // Strategy 2: If event is available, try using event context even for external URLs
+      event ? () => event.$fetch(url, options) : null,
+      // Strategy 3: Use native fetch as last resort
+      () => $fetch(url, options)
+    ].filter(Boolean);
+    let lastError = null;
+    for (const strategy of strategies) {
+      try {
+        return await strategy();
+      } catch (error) {
+        lastError = error;
+        continue;
+      }
+    }
+    throw lastError;
+  }
+  const fetchContainer = url.startsWith("/") && event ? event : globalThis;
+  return await fetchContainer.$fetch(url, options);
+}
+async function fetchDataSource(input, event) {
+  const context = typeof input.context === "string" ? { name: input.context } : input.context || { name: "fetch" };
+  const url = typeof input.fetch === "string" ? input.fetch : input.fetch[0];
+  const options = typeof input.fetch === "string" ? {} : input.fetch[1];
+  const start = Date.now();
+  const isExternalUrl = !url.startsWith("/");
+  const timeout = isExternalUrl ? 1e4 : options.timeout || 5e3;
+  const timeoutController = new AbortController();
+  const abortRequestTimeout = setTimeout(() => timeoutController.abort(), timeout);
+  try {
+    let isMaybeErrorResponse = false;
+    const isXmlRequest = parseURL(url).pathname.endsWith(".xml");
+    const mergedHeaders = defu(
+      options?.headers,
+      {
+        Accept: isXmlRequest ? "text/xml" : "application/json"
+      },
+      event ? { host: getRequestHost(event, { xForwardedHost: true }) } : {}
+    );
+    const fetchOptions = {
+      ...options,
+      responseType: isXmlRequest ? "text" : "json",
+      signal: timeoutController.signal,
+      headers: mergedHeaders,
+      // Use ofetch's built-in retry for external sources
+      ...isExternalUrl && {
+        retry: 2,
+        retryDelay: 200
+      },
+      // @ts-expect-error untyped
+      onResponse({ response }) {
+        if (typeof response._data === "string" && response._data.startsWith("<!DOCTYPE html>"))
+          isMaybeErrorResponse = true;
+      }
+    };
+    const res = await tryFetchWithFallback(url, fetchOptions, event);
+    const timeTakenMs = Date.now() - start;
+    if (isMaybeErrorResponse) {
+      return {
+        ...input,
+        context,
+        urls: [],
+        timeTakenMs,
+        error: "Received HTML response instead of JSON"
+      };
+    }
+    let urls = [];
+    if (typeof res === "object") {
+      urls = res.urls || res;
+    } else if (typeof res === "string" && parseURL(url).pathname.endsWith(".xml")) {
+      const result = await parseSitemapXml(res);
+      urls = result.urls;
+    }
+    return {
+      ...input,
+      context,
+      timeTakenMs,
+      urls
+    };
+  } catch (_err) {
+    const error = _err;
+    if (isExternalUrl) {
+      const errorInfo = {
+        url,
+        timeout,
+        error: error.message,
+        statusCode: error.response?.status,
+        statusText: error.response?.statusText,
+        method: options?.method || "GET"
+      };
+      logger.error("Failed to fetch external source.", errorInfo);
+    } else {
+      logger.error("Failed to fetch source.", { url, error: error.message });
+    }
+    return {
+      ...input,
+      context,
+      urls: [],
+      error: error.message,
+      _isFailure: true
+      // Mark as failure to prevent caching
+    };
+  } finally {
+    if (abortRequestTimeout) {
+      clearTimeout(abortRequestTimeout);
+    }
+  }
+}
+function globalSitemapSources() {
+  return import('../virtual/global-sources.mjs').then((m) => m.sources);
+}
+function childSitemapSources(definition) {
+  return definition?._hasSourceChunk ? import('../virtual/child-sources.mjs').then((m) => m.sources[definition.sitemapName] || []) : Promise.resolve([]);
+}
+async function resolveSitemapSources(sources, event) {
+  return (await Promise.all(
+    sources.map((source) => {
+      if (typeof source === "object" && "urls" in source) {
+        return {
+          timeTakenMs: 0,
+          ...source,
+          urls: source.urls
+        };
+      }
+      if (source.fetch)
+        return fetchDataSource(source, event);
+      return {
+        ...source,
+        error: "Invalid source"
+      };
+    })
+  )).flat();
+}
+
+function sortInPlace(urls) {
+  urls.sort((a, b) => {
+    const aLoc = typeof a === "string" ? a : a.loc;
+    const bLoc = typeof b === "string" ? b : b.loc;
+    const aSegments = aLoc.split("/").length;
+    const bSegments = bLoc.split("/").length;
+    if (aSegments !== bSegments) {
+      return aSegments - bSegments;
+    }
+    return aLoc.localeCompare(bLoc, void 0, { numeric: true });
+  });
+  return urls;
+}
+
+function parseChunkInfo(sitemapName, sitemaps, defaultChunkSize) {
+  defaultChunkSize = defaultChunkSize || 1e3;
+  if (typeof sitemaps.chunks !== "undefined" && !Number.isNaN(Number(sitemapName))) {
+    return {
+      isChunked: true,
+      baseSitemapName: "sitemap",
+      chunkIndex: Number(sitemapName),
+      chunkSize: defaultChunkSize
+    };
+  }
+  if (sitemapName.includes("-")) {
+    const parts = sitemapName.split("-");
+    const lastPart = parts.pop();
+    if (!Number.isNaN(Number(lastPart))) {
+      const baseSitemapName = parts.join("-");
+      const baseSitemap = sitemaps[baseSitemapName];
+      if (baseSitemap && (baseSitemap.chunks || baseSitemap._isChunking)) {
+        const chunkSize = typeof baseSitemap.chunks === "number" ? baseSitemap.chunks : baseSitemap.chunkSize || defaultChunkSize;
+        return {
+          isChunked: true,
+          baseSitemapName,
+          chunkIndex: Number(lastPart),
+          chunkSize
+        };
+      }
+    }
+  }
+  return {
+    isChunked: false,
+    baseSitemapName: sitemapName,
+    chunkIndex: void 0,
+    chunkSize: defaultChunkSize
+  };
+}
+function sliceUrlsForChunk(urls, sitemapName, sitemaps, defaultChunkSize = 1e3) {
+  const chunkInfo = parseChunkInfo(sitemapName, sitemaps, defaultChunkSize);
+  if (chunkInfo.isChunked && chunkInfo.chunkIndex !== void 0) {
+    const startIndex = chunkInfo.chunkIndex * chunkInfo.chunkSize;
+    const endIndex = (chunkInfo.chunkIndex + 1) * chunkInfo.chunkSize;
+    return urls.slice(startIndex, endIndex);
+  }
+  return urls;
+}
+
+function escapeValueForXml(value) {
+  if (value === true || value === false)
+    return value ? "yes" : "no";
+  return xmlEscape(String(value));
+}
+const URLSET_OPENING_TAG = '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.google.com/schemas/sitemap-image/1.1 http://www.google.com/schemas/sitemap-image/1.1/sitemap-image.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+function buildUrlXml(url) {
+  const capacity = 50;
+  const parts = Array.from({ length: capacity });
+  let partIndex = 0;
+  parts[partIndex++] = "    <url>";
+  if (url.loc) {
+    parts[partIndex++] = `        <loc>${escapeValueForXml(url.loc)}</loc>`;
+  }
+  if (url.lastmod) {
+    parts[partIndex++] = `        <lastmod>${url.lastmod}</lastmod>`;
+  }
+  if (url.changefreq) {
+    parts[partIndex++] = `        <changefreq>${url.changefreq}</changefreq>`;
+  }
+  if (url.priority !== void 0) {
+    const priorityValue = Number.parseFloat(String(url.priority));
+    const formattedPriority = priorityValue % 1 === 0 ? String(priorityValue) : priorityValue.toFixed(1);
+    parts[partIndex++] = `        <priority>${formattedPriority}</priority>`;
+  }
+  const keys = Object.keys(url).filter((k) => !k.startsWith("_") && !["loc", "lastmod", "changefreq", "priority"].includes(k));
+  for (const key of keys) {
+    const value = url[key];
+    if (value === void 0 || value === null) continue;
+    switch (key) {
+      case "alternatives":
+        if (Array.isArray(value) && value.length > 0) {
+          for (const alt of value) {
+            const attrs = Object.entries(alt).map(([k, v]) => `${k}="${escapeValueForXml(v)}"`).join(" ");
+            parts[partIndex++] = `        <xhtml:link rel="alternate" ${attrs} />`;
+          }
+        }
+        break;
+      case "images":
+        if (Array.isArray(value) && value.length > 0) {
+          for (const img of value) {
+            parts[partIndex++] = "        <image:image>";
+            parts[partIndex++] = `            <image:loc>${escapeValueForXml(img.loc)}</image:loc>`;
+            if (img.title) parts[partIndex++] = `            <image:title>${escapeValueForXml(img.title)}</image:title>`;
+            if (img.caption) parts[partIndex++] = `            <image:caption>${escapeValueForXml(img.caption)}</image:caption>`;
+            if (img.geo_location) parts[partIndex++] = `            <image:geo_location>${escapeValueForXml(img.geo_location)}</image:geo_location>`;
+            if (img.license) parts[partIndex++] = `            <image:license>${escapeValueForXml(img.license)}</image:license>`;
+            parts[partIndex++] = "        </image:image>";
+          }
+        }
+        break;
+      case "videos":
+        if (Array.isArray(value) && value.length > 0) {
+          for (const video of value) {
+            parts[partIndex++] = "        <video:video>";
+            parts[partIndex++] = `            <video:title>${escapeValueForXml(video.title)}</video:title>`;
+            if (video.thumbnail_loc) {
+              parts[partIndex++] = `            <video:thumbnail_loc>${escapeValueForXml(video.thumbnail_loc)}</video:thumbnail_loc>`;
+            }
+            parts[partIndex++] = `            <video:description>${escapeValueForXml(video.description)}</video:description>`;
+            if (video.content_loc) {
+              parts[partIndex++] = `            <video:content_loc>${escapeValueForXml(video.content_loc)}</video:content_loc>`;
+            }
+            if (video.player_loc) {
+              const attrs = video.player_loc.allow_embed ? ' allow_embed="yes"' : "";
+              const autoplay = video.player_loc.autoplay ? ' autoplay="yes"' : "";
+              parts[partIndex++] = `            <video:player_loc${attrs}${autoplay}>${escapeValueForXml(video.player_loc)}</video:player_loc>`;
+            }
+            if (video.duration !== void 0) {
+              parts[partIndex++] = `            <video:duration>${video.duration}</video:duration>`;
+            }
+            if (video.expiration_date) {
+              parts[partIndex++] = `            <video:expiration_date>${video.expiration_date}</video:expiration_date>`;
+            }
+            if (video.rating !== void 0) {
+              parts[partIndex++] = `            <video:rating>${video.rating}</video:rating>`;
+            }
+            if (video.view_count !== void 0) {
+              parts[partIndex++] = `            <video:view_count>${video.view_count}</video:view_count>`;
+            }
+            if (video.publication_date) {
+              parts[partIndex++] = `            <video:publication_date>${video.publication_date}</video:publication_date>`;
+            }
+            if (video.family_friendly !== void 0) {
+              parts[partIndex++] = `            <video:family_friendly>${video.family_friendly === "yes" || video.family_friendly === true ? "yes" : "no"}</video:family_friendly>`;
+            }
+            if (video.restriction) {
+              const relationship = video.restriction.relationship || "allow";
+              parts[partIndex++] = `            <video:restriction relationship="${relationship}">${escapeValueForXml(video.restriction.restriction)}</video:restriction>`;
+            }
+            if (video.platform) {
+              const relationship = video.platform.relationship || "allow";
+              parts[partIndex++] = `            <video:platform relationship="${relationship}">${escapeValueForXml(video.platform.platform)}</video:platform>`;
+            }
+            if (video.requires_subscription !== void 0) {
+              parts[partIndex++] = `            <video:requires_subscription>${video.requires_subscription === "yes" || video.requires_subscription === true ? "yes" : "no"}</video:requires_subscription>`;
+            }
+            if (video.price) {
+              const prices = Array.isArray(video.price) ? video.price : [video.price];
+              for (const price of prices) {
+                const attrs = [];
+                if (price.currency) attrs.push(`currency="${price.currency}"`);
+                if (price.type) attrs.push(`type="${price.type}"`);
+                const attrsStr = attrs.length > 0 ? " " + attrs.join(" ") : "";
+                parts[partIndex++] = `            <video:price${attrsStr}>${escapeValueForXml(price.price)}</video:price>`;
+              }
+            }
+            if (video.uploader) {
+              const info = video.uploader.info ? ` info="${escapeValueForXml(video.uploader.info)}"` : "";
+              parts[partIndex++] = `            <video:uploader${info}>${escapeValueForXml(video.uploader.uploader)}</video:uploader>`;
+            }
+            if (video.live !== void 0) {
+              parts[partIndex++] = `            <video:live>${video.live === "yes" || video.live === true ? "yes" : "no"}</video:live>`;
+            }
+            if (video.tag) {
+              const tags = Array.isArray(video.tag) ? video.tag : [video.tag];
+              for (const tag of tags) {
+                parts[partIndex++] = `            <video:tag>${escapeValueForXml(tag)}</video:tag>`;
+              }
+            }
+            if (video.category) {
+              parts[partIndex++] = `            <video:category>${escapeValueForXml(video.category)}</video:category>`;
+            }
+            if (video.gallery_loc) {
+              const title = video.gallery_loc.title ? ` title="${escapeValueForXml(video.gallery_loc.title)}"` : "";
+              parts[partIndex++] = `            <video:gallery_loc${title}>${escapeValueForXml(video.gallery_loc)}</video:gallery_loc>`;
+            }
+            parts[partIndex++] = "        </video:video>";
+          }
+        }
+        break;
+      case "news":
+        if (value) {
+          parts[partIndex++] = "        <news:news>";
+          parts[partIndex++] = "            <news:publication>";
+          parts[partIndex++] = `                <news:name>${escapeValueForXml(value.publication.name)}</news:name>`;
+          parts[partIndex++] = `                <news:language>${escapeValueForXml(value.publication.language)}</news:language>`;
+          parts[partIndex++] = "            </news:publication>";
+          if (value.title) {
+            parts[partIndex++] = `            <news:title>${escapeValueForXml(value.title)}</news:title>`;
+          }
+          if (value.publication_date) {
+            parts[partIndex++] = `            <news:publication_date>${value.publication_date}</news:publication_date>`;
+          }
+          if (value.access) {
+            parts[partIndex++] = `            <news:access>${value.access}</news:access>`;
+          }
+          if (value.genres) {
+            parts[partIndex++] = `            <news:genres>${escapeValueForXml(value.genres)}</news:genres>`;
+          }
+          if (value.keywords) {
+            parts[partIndex++] = `            <news:keywords>${escapeValueForXml(value.keywords)}</news:keywords>`;
+          }
+          if (value.stock_tickers) {
+            parts[partIndex++] = `            <news:stock_tickers>${escapeValueForXml(value.stock_tickers)}</news:stock_tickers>`;
+          }
+          parts[partIndex++] = "        </news:news>";
+        }
+        break;
+    }
+  }
+  parts[partIndex++] = "    </url>";
+  return parts.slice(0, partIndex).join("\n");
+}
+function urlsToXml(urls, resolvers, { version, xsl, credits, minify }, errorInfo) {
+  const estimatedSize = urls.length + 5;
+  const xmlParts = Array.from({ length: estimatedSize });
+  let partIndex = 0;
+  let xslHref = xsl ? resolvers.relativeBaseUrlResolver(xsl) : false;
+  if (xslHref && errorInfo && errorInfo.messages.length > 0) {
+    xslHref = withQuery(xslHref, {
+      errors: "true",
+      error_messages: errorInfo.messages,
+      error_urls: errorInfo.urls
+    });
+  }
+  if (xslHref) {
+    xmlParts[partIndex++] = `<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="${escapeValueForXml(xslHref)}"?>`;
+  } else {
+    xmlParts[partIndex++] = '<?xml version="1.0" encoding="UTF-8"?>';
+  }
+  xmlParts[partIndex++] = URLSET_OPENING_TAG;
+  for (const url of urls) {
+    xmlParts[partIndex++] = buildUrlXml(url);
+  }
+  xmlParts[partIndex++] = "</urlset>";
+  if (credits) {
+    xmlParts[partIndex++] = `<!-- XML Sitemap generated by @nuxtjs/sitemap v${version} at ${(/* @__PURE__ */ new Date()).toISOString()} -->`;
+  }
+  const xmlContent = xmlParts.slice(0, partIndex);
+  if (minify) {
+    return xmlContent.join("").replace(/(?<!<[^>]*)\s(?![^<]*>)/g, "");
+  }
+  return xmlContent.join("\n");
+}
+
+function resolveSitemapEntries(sitemap, urls, runtimeConfig, resolvers) {
+  const {
+    autoI18n,
+    isI18nMapped
+  } = runtimeConfig;
+  const filterPath = createPathFilter({
+    include: sitemap.include,
+    exclude: sitemap.exclude
+  });
+  const _urls = urls.map((_e) => {
+    const e = preNormalizeEntry(_e, resolvers);
+    if (!e.loc || !filterPath(e.loc))
+      return false;
+    return e;
+  }).filter(Boolean);
+  let validI18nUrlsForTransform = [];
+  const withoutPrefixPaths = {};
+  if (autoI18n && autoI18n.strategy !== "no_prefix") {
+    const localeCodes = autoI18n.locales.map((l) => l.code);
+    validI18nUrlsForTransform = _urls.map((_e, i) => {
+      if (_e._abs)
+        return false;
+      const split = splitForLocales(_e._relativeLoc, localeCodes);
+      let localeCode = split[0];
+      const pathWithoutPrefix = split[1];
+      if (!localeCode)
+        localeCode = autoI18n.defaultLocale;
+      const e = _e;
+      e._pathWithoutPrefix = pathWithoutPrefix;
+      const locale = autoI18n.locales.find((l) => l.code === localeCode);
+      if (!locale)
+        return false;
+      e._locale = locale;
+      e._index = i;
+      e._key = `${e._sitemap || ""}${e._path?.pathname || "/"}${e._path.search}`;
+      withoutPrefixPaths[pathWithoutPrefix] = withoutPrefixPaths[pathWithoutPrefix] || [];
+      if (!withoutPrefixPaths[pathWithoutPrefix].some((e2) => e2._locale.code === locale.code))
+        withoutPrefixPaths[pathWithoutPrefix].push(e);
+      return e;
+    }).filter(Boolean);
+    for (const e of validI18nUrlsForTransform) {
+      if (!e._i18nTransform && !e.alternatives?.length) {
+        const alternatives = withoutPrefixPaths[e._pathWithoutPrefix].map((u) => {
+          const entries = [];
+          if (u._locale.code === autoI18n.defaultLocale) {
+            entries.push({
+              href: u.loc,
+              hreflang: "x-default"
+            });
+          }
+          entries.push({
+            href: u.loc,
+            hreflang: u._locale._hreflang || autoI18n.defaultLocale
+          });
+          return entries;
+        }).flat().filter(Boolean);
+        if (alternatives.length)
+          e.alternatives = alternatives;
+      } else if (e._i18nTransform) {
+        delete e._i18nTransform;
+        if (autoI18n.strategy === "no_prefix") ;
+        if (autoI18n.differentDomains) {
+          e.alternatives = [
+            {
+              // apply default locale domain
+              ...autoI18n.locales.find((l) => [l.code, l.language].includes(autoI18n.defaultLocale)),
+              code: "x-default"
+            },
+            ...autoI18n.locales.filter((l) => !!l.domain)
+          ].map((locale) => {
+            return {
+              hreflang: locale._hreflang,
+              href: joinURL(withHttps(locale.domain), e._pathWithoutPrefix)
+            };
+          });
+        } else {
+          for (const l of autoI18n.locales) {
+            let loc = e._pathWithoutPrefix;
+            if (autoI18n.pages) {
+              const pageKey = e._pathWithoutPrefix.replace(/^\//, "").replace(/\/index$/, "") || "index";
+              const pageMappings = autoI18n.pages[pageKey];
+              if (pageMappings && pageMappings[l.code] !== void 0) {
+                const customPath = pageMappings[l.code];
+                if (customPath === false)
+                  continue;
+                if (typeof customPath === "string")
+                  loc = customPath.startsWith("/") ? customPath : `/${customPath}`;
+              } else if (!autoI18n.differentDomains && !(["prefix_and_default", "prefix_except_default"].includes(autoI18n.strategy) && l.code === autoI18n.defaultLocale)) {
+                loc = joinURL(`/${l.code}`, e._pathWithoutPrefix);
+              }
+            } else {
+              if (!autoI18n.differentDomains && !(["prefix_and_default", "prefix_except_default"].includes(autoI18n.strategy) && l.code === autoI18n.defaultLocale))
+                loc = joinURL(`/${l.code}`, e._pathWithoutPrefix);
+            }
+            const _sitemap = isI18nMapped ? l._sitemap : void 0;
+            const newEntry = preNormalizeEntry({
+              _sitemap,
+              ...e,
+              _index: void 0,
+              _key: `${_sitemap || ""}${loc || "/"}${e._path.search}`,
+              _locale: l,
+              loc,
+              alternatives: [{ code: "x-default", _hreflang: "x-default" }, ...autoI18n.locales].map((locale) => {
+                const code = locale.code === "x-default" ? autoI18n.defaultLocale : locale.code;
+                const isDefault = locale.code === "x-default" || locale.code === autoI18n.defaultLocale;
+                let href = e._pathWithoutPrefix;
+                if (autoI18n.pages) {
+                  const pageKey = e._pathWithoutPrefix.replace(/^\//, "").replace(/\/index$/, "") || "index";
+                  const pageMappings = autoI18n.pages[pageKey];
+                  if (pageMappings && pageMappings[code] !== void 0) {
+                    const customPath = pageMappings[code];
+                    if (customPath === false)
+                      return false;
+                    if (typeof customPath === "string")
+                      href = customPath.startsWith("/") ? customPath : `/${customPath}`;
+                  } else if (autoI18n.strategy === "prefix") {
+                    href = joinURL("/", code, e._pathWithoutPrefix);
+                  } else if (["prefix_and_default", "prefix_except_default"].includes(autoI18n.strategy)) {
+                    if (!isDefault) {
+                      href = joinURL("/", code, e._pathWithoutPrefix);
+                    }
+                  }
+                } else {
+                  if (autoI18n.strategy === "prefix") {
+                    href = joinURL("/", code, e._pathWithoutPrefix);
+                  } else if (["prefix_and_default", "prefix_except_default"].includes(autoI18n.strategy)) {
+                    if (!isDefault) {
+                      href = joinURL("/", code, e._pathWithoutPrefix);
+                    }
+                  }
+                }
+                if (!filterPath(href))
+                  return false;
+                return {
+                  hreflang: locale._hreflang,
+                  href
+                };
+              }).filter(Boolean)
+            }, resolvers);
+            if (e._locale.code === newEntry._locale.code) {
+              _urls[e._index] = newEntry;
+              e._index = void 0;
+            } else {
+              _urls.push(newEntry);
+            }
+          }
+        }
+      }
+      if (isI18nMapped) {
+        e._sitemap = e._sitemap || e._locale._sitemap;
+        e._key = `${e._sitemap || ""}${e.loc || "/"}${e._path.search}`;
+      }
+      if (e._index)
+        _urls[e._index] = e;
+    }
+  }
+  return _urls;
+}
+async function buildSitemapUrls(sitemap, resolvers, runtimeConfig, nitro) {
+  const {
+    sitemaps,
+    // enhancing
+    autoI18n,
+    isI18nMapped,
+    isMultiSitemap,
+    // sorting
+    sortEntries,
+    // chunking
+    defaultSitemapsChunkSize
+  } = runtimeConfig;
+  const chunkInfo = parseChunkInfo(sitemap.sitemapName, sitemaps, defaultSitemapsChunkSize);
+  function maybeSort(urls2) {
+    return sortEntries ? sortInPlace(urls2) : urls2;
+  }
+  function maybeSlice(urls2) {
+    return sliceUrlsForChunk(urls2, sitemap.sitemapName, sitemaps, defaultSitemapsChunkSize);
+  }
+  if (autoI18n?.differentDomains) {
+    const domain = autoI18n.locales.find((e) => [e.language, e.code].includes(sitemap.sitemapName))?.domain;
+    if (domain) {
+      const _tester = resolvers.canonicalUrlResolver;
+      resolvers.canonicalUrlResolver = (path) => resolveSitePath(path, {
+        absolute: true,
+        withBase: false,
+        siteUrl: withHttps(domain),
+        trailingSlash: _tester("/test/").endsWith("/"),
+        base: "/"
+      });
+    }
+  }
+  let effectiveSitemap = sitemap;
+  const baseSitemapName = chunkInfo.baseSitemapName;
+  if (chunkInfo.isChunked && baseSitemapName !== sitemap.sitemapName && sitemaps[baseSitemapName]) {
+    effectiveSitemap = sitemaps[baseSitemapName];
+  }
+  let sourcesInput = effectiveSitemap.includeAppSources ? await globalSitemapSources() : [];
+  sourcesInput.push(...await childSitemapSources(effectiveSitemap));
+  if (nitro && resolvers.event) {
+    const ctx = {
+      event: resolvers.event,
+      sitemapName: baseSitemapName,
+      sources: sourcesInput
+    };
+    await nitro.hooks.callHook("sitemap:sources", ctx);
+    sourcesInput = ctx.sources;
+  }
+  const sources = await resolveSitemapSources(sourcesInput, resolvers.event);
+  const failedSources = sources.filter((source) => source.error && source._isFailure).map((source) => ({
+    url: typeof source.fetch === "string" ? source.fetch : source.fetch?.[0] || "unknown",
+    error: source.error || "Unknown error"
+  }));
+  const resolvedCtx = {
+    urls: sources.flatMap((s) => s.urls),
+    sitemapName: sitemap.sitemapName,
+    event: resolvers.event
+  };
+  await nitro?.hooks.callHook("sitemap:input", resolvedCtx);
+  const enhancedUrls = resolveSitemapEntries(sitemap, resolvedCtx.urls, { autoI18n, isI18nMapped }, resolvers);
+  const filteredUrls = enhancedUrls.filter((e) => {
+    if (isMultiSitemap && e._sitemap && sitemap.sitemapName)
+      return e._sitemap === sitemap.sitemapName;
+    return true;
+  });
+  const sortedUrls = maybeSort(filteredUrls);
+  const urls = maybeSlice(sortedUrls);
+  return { urls, failedSources };
+}
+
+function useNitroUrlResolvers(e) {
+  const canonicalQuery = getQuery(e).canonical;
+  const isShowingCanonical = typeof canonicalQuery !== "undefined" && canonicalQuery !== "false";
+  const siteConfig = useSiteConfig(e);
+  return {
+    event: e,
+    fixSlashes: (path) => fixSlashes(siteConfig.trailingSlash, path),
+    // we need these as they depend on the nitro event
+    canonicalUrlResolver: createSitePathResolver(e, {
+      canonical: isShowingCanonical || true,
+      absolute: true,
+      withBase: true
+    }),
+    relativeBaseUrlResolver: createSitePathResolver(e, { absolute: false, withBase: true })
+  };
+}
+async function buildSitemapXml(event, definition, resolvers, runtimeConfig) {
+  const { sitemapName } = definition;
+  const nitro = useNitroApp();
+  const { urls: sitemapUrls, failedSources } = await buildSitemapUrls(definition, resolvers, runtimeConfig, nitro);
+  const routeRuleMatcher = createNitroRouteRuleMatcher();
+  const { autoI18n } = runtimeConfig;
+  let validCount = 0;
+  for (let i = 0; i < sitemapUrls.length; i++) {
+    const u = sitemapUrls[i];
+    const path = u._path?.pathname || u.loc;
+    let routeRules = routeRuleMatcher(path);
+    if (autoI18n?.locales && autoI18n?.strategy !== "no_prefix") {
+      const match = splitForLocales(path, autoI18n.locales.map((l) => l.code));
+      const pathWithoutPrefix = match[1];
+      if (pathWithoutPrefix && pathWithoutPrefix !== path)
+        routeRules = defu(routeRules, routeRuleMatcher(pathWithoutPrefix));
+    }
+    if (routeRules.sitemap === false)
+      continue;
+    if (typeof routeRules.robots !== "undefined" && !routeRules.robots)
+      continue;
+    const hasRobotsDisabled = Object.entries(routeRules.headers || {}).some(([name, value]) => name.toLowerCase() === "x-robots-tag" && value.toLowerCase().includes("noindex"));
+    if (routeRules.redirect || hasRobotsDisabled)
+      continue;
+    sitemapUrls[validCount++] = routeRules.sitemap ? defu(u, routeRules.sitemap) : u;
+  }
+  sitemapUrls.length = validCount;
+  const locSize = sitemapUrls.length;
+  const resolvedCtx = {
+    urls: sitemapUrls,
+    sitemapName,
+    event
+  };
+  await nitro.hooks.callHook("sitemap:resolved", resolvedCtx);
+  if (resolvedCtx.urls.length !== locSize) {
+    resolvedCtx.urls = resolvedCtx.urls.map((e) => preNormalizeEntry(e, resolvers));
+  }
+  const maybeSort = (urls2) => runtimeConfig.sortEntries ? sortInPlace(urls2) : urls2;
+  const normalizedPreDedupe = resolvedCtx.urls.map((e) => normaliseEntry(e, definition.defaults, resolvers));
+  const urls = maybeSort(mergeOnKey(normalizedPreDedupe, "_key").map((e) => normaliseEntry(e, definition.defaults, resolvers)));
+  if (definition._isChunking && definition.sitemapName.includes("-")) {
+    const parts = definition.sitemapName.split("-");
+    const lastPart = parts.pop();
+    if (!Number.isNaN(Number(lastPart))) {
+      const chunkIndex = Number(lastPart);
+      const baseSitemapName = parts.join("-");
+      if (urls.length === 0 && chunkIndex > 0) {
+        throw createError$1({
+          statusCode: 404,
+          message: `Sitemap chunk ${chunkIndex} for "${baseSitemapName}" does not exist.`
+        });
+      }
+    }
+  }
+  const errorInfo = failedSources.length > 0 ? {
+    messages: failedSources.map((f) => f.error),
+    urls: failedSources.map((f) => f.url)
+  } : void 0;
+  const sitemap = urlsToXml(urls, resolvers, runtimeConfig, errorInfo);
+  const ctx = { sitemap, sitemapName, event };
+  await nitro.hooks.callHook("sitemap:output", ctx);
+  return ctx.sitemap;
+}
+const buildSitemapXmlCached = defineCachedFunction(
+  buildSitemapXml,
+  {
+    name: "sitemap:xml",
+    group: "sitemap",
+    maxAge: 60 * 10,
+    // Default 10 minutes
+    base: "sitemap",
+    // Use the sitemap storage
+    getKey: (event, definition) => {
+      const host = getHeader(event, "host") || getHeader(event, "x-forwarded-host") || "";
+      const proto = getHeader(event, "x-forwarded-proto") || "https";
+      const sitemapName = definition.sitemapName || "default";
+      return `${sitemapName}-${proto}-${host}`;
+    },
+    swr: true
+    // Enable stale-while-revalidate
+  }
+);
+async function createSitemap(event, definition, runtimeConfig) {
+  const resolvers = useNitroUrlResolvers(event);
+  const shouldCache = typeof runtimeConfig.cacheMaxAgeSeconds === "number" && runtimeConfig.cacheMaxAgeSeconds > 0;
+  const xml = shouldCache ? await buildSitemapXmlCached(event, definition, resolvers, runtimeConfig) : await buildSitemapXml(event, definition, resolvers, runtimeConfig);
+  setHeader(event, "Content-Type", "text/xml; charset=UTF-8");
+  if (runtimeConfig.cacheMaxAgeSeconds) {
+    setHeader(event, "Cache-Control", `public, max-age=${runtimeConfig.cacheMaxAgeSeconds}, s-maxage=${runtimeConfig.cacheMaxAgeSeconds}, stale-while-revalidate=3600`);
+    const now = /* @__PURE__ */ new Date();
+    setHeader(event, "X-Sitemap-Generated", now.toISOString());
+    setHeader(event, "X-Sitemap-Cache-Duration", `${runtimeConfig.cacheMaxAgeSeconds}s`);
+    const expiryTime = new Date(now.getTime() + runtimeConfig.cacheMaxAgeSeconds * 1e3);
+    setHeader(event, "X-Sitemap-Cache-Expires", expiryTime.toISOString());
+    const remainingSeconds = Math.floor((expiryTime.getTime() - now.getTime()) / 1e3);
+    setHeader(event, "X-Sitemap-Cache-Remaining", `${remainingSeconds}s`);
+  } else {
+    setHeader(event, "Cache-Control", `no-cache, no-store`);
+  }
+  event.context._isSitemap = true;
+  return xml;
+}
+
+const _1Tm6Wn = defineEventHandler(async (e) => {
+  const runtimeConfig = useSitemapRuntimeConfig();
+  const { sitemaps } = runtimeConfig;
+  if ("index" in sitemaps) {
+    return sendRedirect(e, withBase("/sitemap_index.xml", useRuntimeConfig().app.baseURL), 301);
+  }
+  return createSitemap(e, Object.values(sitemaps)[0], runtimeConfig);
+});
+
+const _SxA8c9 = defineEventHandler(() => {});
+
+const _y5Rh8f = eventHandler(async (event) => {
+  const collection = getRouterParam(event, "collection");
+  setHeader(event, "Content-Type", "text/plain");
+  const data = await useStorage().getItem(`build:content:database.compressed.mjs`) || "";
+  if (data) {
+    const lineStart = `export const ${collection} = "`;
+    const content = String(data).split("\n").find((line) => line.startsWith(lineStart));
+    if (content) {
+      return content.substring(lineStart.length, content.length - 1);
+    }
+  }
+  return await import('../build/database.compressed.mjs').then((m) => m[collection]);
+});
+
+async function decompressSQLDump(base64Str, compressionType = "gzip") {
+  const binaryData = Uint8Array.from(atob(base64Str), (c) => c.charCodeAt(0));
+  const response = new Response(new Blob([binaryData]));
+  const decompressedStream = response.body?.pipeThrough(new DecompressionStream(compressionType));
+  const text = await new Response(decompressedStream).text();
+  return JSON.parse(text);
 }
 
 function refineContentFields(sql, doc) {
@@ -6004,7 +8454,7 @@ function sqliteConnector(opts) {
 			_db = new Database(":memory:");
 			return _db;
 		}
-		const filePath = resolve$1(opts.cwd || ".", opts.path || `.data/${opts.name || "db"}.sqlite3`);
+		const filePath = resolve$2(opts.cwd || ".", opts.path || `.data/${opts.name || "db"}.sqlite3`);
 		mkdirSync(dirname$1(filePath), { recursive: true });
 		_db = new Database(filePath);
 		return _db;
@@ -6269,6 +8719,10 @@ function cleanupQuery(query, options = { removeString: false }) {
   return result;
 }
 
+function defineNitroPlugin(def) {
+  return def;
+}
+
 function defineRenderHandler(render) {
   const runtimeConfig = useRuntimeConfig();
   return eventHandler(async (event) => {
@@ -6357,6 +8811,10 @@ const _lazy_CscNuU = () => import('../routes/renderer.mjs').then(function (n) { 
 const handlers = [
   { route: '', handler: _obTYnf, lazy: false, middleware: true, method: undefined },
   { route: '/__nuxt_error', handler: _lazy_CscNuU, lazy: true, middleware: false, method: undefined },
+  { route: '', handler: _dNhsiP, lazy: false, middleware: true, method: undefined },
+  { route: '/__sitemap__/nuxt-content-urls.json', handler: _Zd7uC2, lazy: false, middleware: false, method: undefined },
+  { route: '/__sitemap__/style.xsl', handler: _efsuET, lazy: false, middleware: false, method: undefined },
+  { route: '/sitemap.xml', handler: _1Tm6Wn, lazy: false, middleware: false, method: undefined },
   { route: '/__nuxt_island/**', handler: _SxA8c9, lazy: false, middleware: false, method: undefined },
   { route: '/__nuxt_content/:collection/sql_dump.txt', handler: _y5Rh8f, lazy: false, middleware: false, method: undefined },
   { route: '/__nuxt_content/:collection/query', handler: _eaiF_h, lazy: false, middleware: false, method: undefined },

@@ -6,7 +6,9 @@ import 'node:buffer';
 import 'node:fs';
 import 'node:path';
 import 'node:crypto';
+import 'vue';
 import 'node:url';
+import 'consola';
 import 'better-sqlite3';
 import 'ipx';
 //# sourceMappingURL=index.mjs.map
