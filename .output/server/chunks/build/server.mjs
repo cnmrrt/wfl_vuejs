@@ -831,6 +831,8 @@ const components_plugin_4kY4pyzJIYX99vmMAAIorFf3CnAaptHitJgf7JxiED8 = /* @__PURE
     }
   }
 });
+const gtm_YwLB4plgkEO4ZNJ2VtGsk1bLtJJ5LKTe4uJQI82JJjE = /* @__PURE__ */ defineNuxtPlugin(() => {
+});
 function useRequestEvent(nuxtApp) {
   nuxtApp ||= useNuxtApp();
   return nuxtApp.ssrContext?.event;
@@ -848,6 +850,7 @@ const plugins = [
   plugin,
   revive_payload_server_MVtmlZaQpj6ApFmshWfUWl5PehCebzaBf2NuRMiIbms,
   components_plugin_4kY4pyzJIYX99vmMAAIorFf3CnAaptHitJgf7JxiED8,
+  gtm_YwLB4plgkEO4ZNJ2VtGsk1bLtJJ5LKTe4uJQI82JJjE,
   prerender_server_sqIxOBipVr4FbVMA9kqWL0wT8FPop6sKAXLVfifsJzk
 ];
 const layouts = {};
