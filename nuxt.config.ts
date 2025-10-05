@@ -7,7 +7,7 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/image',
     '@nuxt/scripts',
-    '@nuxt/test-utils'
+    '@nuxt/test-utils',
   ],
 
   css: [
@@ -21,7 +21,7 @@ export default defineNuxtConfig({
           src: "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5581015881313741",
           async: true,
           crossorigin: "anonymous"
-        }
+        },
       ]
     }
   },

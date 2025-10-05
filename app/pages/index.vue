@@ -62,7 +62,6 @@ import { ref, onMounted, nextTick } from 'vue'
 
 
 useHead(() => {
-  if (!preverb.value) return {}
   return {
     title: 'Words From Life - Quotes, Words, Idioms and Proverbs',
     meta: [
@@ -203,6 +202,12 @@ onMounted(async () => {
   margin: 0;
   font-weight: 600;
   text-align: center;
+}
+
+@media (min-width: 1200px) {
+  .demo img {
+    width: 163px !important;
+  }
 }
 
 @media (max-width: 767px) {

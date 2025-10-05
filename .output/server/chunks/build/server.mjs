@@ -400,7 +400,7 @@ const _routes = [
   {
     name: "index",
     path: "/",
-    component: () => import('./index-VEQTxT0v.mjs')
+    component: () => import('./index-CG6HLVTz.mjs')
   },
   {
     name: "words",
