@@ -1,0 +1,4 @@
+const about_vue_vue_type_style_index_0_scoped_462e8095_lang = ".main[data-v-462e8095]{padding:2rem 0}.home-container[data-v-462e8095]{margin:0 auto;max-width:100%;padding:0 24px;width:1128px}.section[data-v-462e8095]{padding:0 0 50px}.about-content[data-v-462e8095]{line-height:1.6;margin:0 auto;max-width:800px}.about-content h2[data-v-462e8095]{color:#333;margin-bottom:1rem;margin-top:2rem}.about-content p[data-v-462e8095]{color:#666;margin-bottom:1rem}.about-content ul[data-v-462e8095]{margin:1rem 0;padding-left:2rem}.about-content li[data-v-462e8095]{color:#666;margin-bottom:.5rem}@media (max-width:767px){.home-container[data-v-462e8095]{max-width:90%;padding:0 1rem}}";
+
+export { about_vue_vue_type_style_index_0_scoped_462e8095_lang as a };
+//# sourceMappingURL=about-styles-1.mjs-Byf8EGtY.mjs.map

@@ -1,0 +1,4 @@
+const index_vue_vue_type_style_index_0_scoped_857ad007_lang = ".main[data-v-857ad007]{padding:2rem 0}.home-container[data-v-857ad007]{margin:0 auto;max-width:100%;padding:0 24px;width:1128px}.section[data-v-857ad007]{padding:0 0 50px}.demo[data-v-857ad007]{border:2px solid #eee;border-radius:8px;margin:10px;transition:transform .2s,box-shadow .2s}.demo[data-v-857ad007]:hover{box-shadow:0 4px 12px #0000001a;transform:translateY(-2px)}.demo a[data-v-857ad007]{color:#000;display:block;text-decoration:none}.demo img[data-v-857ad007]{border-radius:4px;display:block;height:auto;max-width:100%}#macy-container[data-v-857ad007]{padding:1rem 0}#macy-container .demo[data-v-857ad007]{margin-bottom:20px;width:100%}@media (max-width:767px){.home-container[data-v-857ad007]{max-width:100%;padding:0}}";
+
+export { index_vue_vue_type_style_index_0_scoped_857ad007_lang as i };
+//# sourceMappingURL=index-styles-1.mjs-C-oxQ-Bw.mjs.map
