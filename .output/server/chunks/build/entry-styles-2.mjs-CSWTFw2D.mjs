@@ -1,0 +1,4 @@
+const Navbar_vue_vue_type_style_index_0_scoped_4c886622_lang = "#navbar[data-v-4c886622]{background:#f8f9fa;border-bottom:1px solid #e5e5e5;display:flex;justify-content:center;padding:1rem 0}#navbar ul[data-v-4c886622]{display:flex;gap:1rem;list-style:none;margin:0;padding:0}#navbar li[data-v-4c886622]{padding:.5rem .75rem}#navbar a[data-v-4c886622]{color:#333;font-weight:500;text-decoration:none;transition:color .2s}#navbar .router-link-active[data-v-4c886622],#navbar a[data-v-4c886622]:hover{color:#007bff}@media (max-width:767px){#navbar[data-v-4c886622]{overflow-x:auto;padding:0 0 1rem;white-space:nowrap;width:100%}#navbar ul[data-v-4c886622]{gap:.5rem}}";
+
+export { Navbar_vue_vue_type_style_index_0_scoped_4c886622_lang as N };
+//# sourceMappingURL=entry-styles-2.mjs-CSWTFw2D.mjs.map
