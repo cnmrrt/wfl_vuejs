@@ -1,4 +1,3 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
@@ -9,10 +8,13 @@ export default defineNuxtConfig({
     '@nuxt/image',
     '@nuxt/scripts',
     '@nuxt/test-utils',
+    '@nuxtjs/gtm'
   ],
+
   css: [
-  '~/assets/css/style.css'
+    '~/assets/css/style.css'
   ],
+
   app: {
     head: {
       script: [
@@ -23,6 +25,14 @@ export default defineNuxtConfig({
         }
       ]
     }
-  }
+  },
 
+  runtimeConfig: {
+    public: {
+      gtm: {
+        id: 'GTM-TKDV62Q', // replace with your GTM container ID
+        enabled: true
+      }
+    }
+  }
 })

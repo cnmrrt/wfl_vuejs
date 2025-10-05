@@ -60,6 +60,28 @@ import Navbar from '~/components/Navbar.vue'
 
 import { ref, onMounted, nextTick } from 'vue'
 
+
+useHead(() => {
+  if (!preverb.value) return {}
+  return {
+    title: 'Words From Life - Quotes, Words, Idioms and Proverbs',
+    meta: [
+      { name: 'description', content: 'All inspirational and motivational quotes.' },
+      { property: 'og:title', content: 'Words From Life - Quotes, Words, Idioms and Proverbs' },
+      { property: 'og:description', content: 'All inspirational and motivational quotes.'},
+      // { property: 'og:image', content: preverb.value.img || '' },
+      { property: 'og:url', content: `https://wordsfromlife.com/` }
+    ],
+    link: [
+        {
+          rel: 'canonical',
+          href: `https://wordsfromlife.com/`
+        }
+      ]
+  }
+})
+
+
 // -------------------
 // Fetch data on SSR
 // -------------------
