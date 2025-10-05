@@ -1094,7 +1094,7 @@ const _Np9nMXvX8d7AfLG_EkHPYFgxOdmn5l_KH0bV8owdelc = (function(nitro) {
 
 const rootDir = "/Users/mac/Desktop/wfl_vuejs";
 
-const appHead = {"meta":[{"name":"viewport","content":"width=device-width, initial-scale=1"},{"charset":"utf-8"}],"link":[],"style":[],"script":[],"noscript":[]};
+const appHead = {"meta":[{"name":"viewport","content":"width=device-width, initial-scale=1"},{"charset":"utf-8"}],"link":[],"style":[],"script":[{"src":"https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5581015881313741","async":true,"crossorigin":"anonymous"}],"noscript":[]};
 
 const appRootTag = "div";
 
