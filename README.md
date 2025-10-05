@@ -1,88 +1,75 @@
-# WFL Vue.js Project
+# Nuxt Minimal Starter
 
-A modern Vue.js 3 application built with Vite for fast development and optimized builds.
+Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
-## Features
+## Setup
 
-- ⚡️ Vue 3 with Composition API
-- 🚀 Vite for lightning-fast development
-- 🎨 Modern, responsive UI
-- 📦 Component-based architecture
-- 🔥 Hot Module Replacement (HMR)
-
-## Project Structure
-
-```
-wfl_vuejs/
-├── src/
-│   ├── components/          # Reusable Vue components
-│   │   └── HelloWorld.vue
-│   ├── App.vue             # Main application component
-│   ├── main.js             # Application entry point
-│   └── style.css           # Global styles
-├── index.html              # HTML template
-├── package.json            # Dependencies and scripts
-├── vite.config.js          # Vite configuration
-└── README.md               # This file
-```
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js (version 16 or higher)
-- npm or yarn
-
-### Installation
-
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-2. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-3. Open your browser and navigate to `http://localhost:3000`
-
-### Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-
-## What's Included
-
-The project includes:
-
-- **Counter Component**: Demonstrates reactive state management
-- **Message Input**: Shows two-way data binding
-- **HelloWorld Component**: Example of a reusable component
-- **Modern Styling**: Clean, responsive design with CSS Grid and Flexbox
-
-## Development
-
-The app uses Vue 3's Composition API for better code organization and reusability. Key features demonstrated:
-
-- `ref()` for reactive state
-- Event handling with `@click`
-- Two-way binding with `v-model`
-- Component props and communication
-
-## Building for Production
-
-To create a production build:
+Make sure to install dependencies:
 
 ```bash
-npm run build
+# npm
+npm install
+
+# pnpm
+pnpm install
+
+# yarn
+yarn install
+
+# bun
+bun install
 ```
 
-The built files will be in the `dist` directory, ready for deployment.
+## Development Server
 
-## Learn More
+Start the development server on `http://localhost:3000`:
 
-- [Vue.js Documentation](https://vuejs.org/)
-- [Vite Documentation](https://vitejs.dev/)
-- [Vue 3 Composition API](https://vuejs.org/guide/extras/composition-api-faq.html)
+```bash
+# npm
+npm run dev
+
+# pnpm
+pnpm dev
+
+# yarn
+yarn dev
+
+# bun
+bun run dev
+```
+
+## Production
+
+Build the application for production:
+
+```bash
+# npm
+npm run build
+
+# pnpm
+pnpm build
+
+# yarn
+yarn build
+
+# bun
+bun run build
+```
+
+Locally preview production build:
+
+```bash
+# npm
+npm run preview
+
+# pnpm
+pnpm preview
+
+# yarn
+yarn preview
+
+# bun
+bun run preview
+```
+
+Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
