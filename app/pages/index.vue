@@ -205,6 +205,7 @@ onMounted(async () => {
 }
 
 @media (min-width: 1200px) {
+  .demo,
   .demo img {
     width: 163px !important;
   }

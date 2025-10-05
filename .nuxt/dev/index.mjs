@@ -664,7 +664,7 @@ const _inlineRuntimeConfig = {
   },
   "public": {
     "content": {
-      "wsUrl": "ws://localhost:4000/"
+      "wsUrl": "ws://localhost:4001/"
     },
     "mdc": {
       "components": {
@@ -1189,7 +1189,22 @@ const plugins = [
 _49H15cZlRc4zcxOI_AcDktLjeBuk2xcZRvXZixz3_j0
 ];
 
-const assets = {};
+const assets = {
+  "/index.mjs": {
+    "type": "text/javascript; charset=utf-8",
+    "etag": "\"15f5b-tR3zBWUdpFOFEpz1e1CUPPNVbRk\"",
+    "mtime": "2025-10-05T17:18:18.995Z",
+    "size": 89947,
+    "path": "index.mjs"
+  },
+  "/index.mjs.map": {
+    "type": "application/json",
+    "etag": "\"53f42-lQGJoA4ldQKF94MqRKCdMeNWCAQ\"",
+    "mtime": "2025-10-05T17:18:18.995Z",
+    "size": 343874,
+    "path": "index.mjs.map"
+  }
+};
 
 function readAsset (id) {
   const serverDir = dirname$1(fileURLToPath(globalThis._importMeta_.url));
