@@ -27,12 +27,4 @@ export default defineNuxtConfig({
     }
   },
 
-  runtimeConfig: {
-    public: {
-      gtm: {
-        id: 'GTM-TKDV62Q', // replace with your GTM container ID
-        enabled: true
-      }
-    }
-  }
 })

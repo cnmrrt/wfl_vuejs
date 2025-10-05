@@ -1,4 +1,10 @@
 <template>
+  <noscript>
+      <iframe 
+        src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+        height="0" width="0" style="display:none;visibility:hidden">
+      </iframe>
+    </noscript>
   <Navbar />
   <main class="main" role="main">
     <h1>Words From Life</h1>
