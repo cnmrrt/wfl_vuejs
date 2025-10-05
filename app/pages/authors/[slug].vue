@@ -65,7 +65,13 @@ if (authorData.value) {
       { property: 'og:description', content: authorData.value.en_meta_desc || '' },
       { property: 'og:url', content: `https://wordsfromlife.com/authors/${authorData.value.id}-quotes` },
       { property: 'og:image', content: authorData.value.img }
-    ]
+    ],
+    link: [
+        {
+          rel: 'canonical',
+          href: `https://wordsfromlife.com/authors/${authorData.value.id}-quotes`
+        }
+      ]
   })
 }
 
