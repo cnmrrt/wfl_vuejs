@@ -38,17 +38,16 @@ const { data: preverb } = await useAsyncData(`preverb-${slug}`, async () => {
   return res.find(item => item.id?.toLowerCase() === slug.toLowerCase())
 })
 
-// ✅ SEO
 useHead(() => {
   if (!preverb.value) return {}
   return {
     title: `${preverb.value.preverb}`,
     meta: [
-    //   { name: 'description', content: word.value.en_meta_desc || '' },
-    //   { property: 'og:title', content: `Meaning of ${word.value.word}` },
-    //   { property: 'og:description', content: word.value.en_meta_desc || '' },
-    //   { property: 'og:image', content: word.value.img || '' },
-    //   { property: 'og:url', content: `https://wordsfromlife.com/words/${word.value.id}` }
+      { name: 'description', content: preverb.value.en_meta_desc || '' },
+      { property: 'og:title', content: `${preverb.value.preverb}` },
+      { property: 'og:description', content: preverb.value.en_meta_desc || '' },
+      { property: 'og:image', content: preverb.value.img || '' },
+      { property: 'og:url', content: `https://wordsfromlife.com/words/${word.value.id}` }
     ],
     link: [
         {
