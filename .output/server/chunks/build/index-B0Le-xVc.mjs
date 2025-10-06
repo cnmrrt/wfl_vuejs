@@ -67,15 +67,15 @@ const _sfc_main = {
       const _component_NuxtLink = __nuxt_component_0;
       _push(`<!--[-->`);
       _push(ssrRenderComponent(Navbar, null, null, _parent));
-      _push(`<main class="main" role="main" data-v-93122bf5><h1 data-v-93122bf5>Words From Life</h1><div class="home-container" data-v-93122bf5><section class="section" data-v-93122bf5><div id="macy-container" data-v-93122bf5><!--[-->`);
+      _push(`<main class="main" role="main" data-v-acdc5372><h1 data-v-acdc5372>Words From Life</h1><div class="home-container" data-v-acdc5372><section class="section" data-v-acdc5372><div id="macy-container" data-v-acdc5372><!--[-->`);
       ssrRenderList(unref(authorsData), (item) => {
-        _push(`<div class="demo" style="${ssrRenderStyle(item.en_quotes !== "" && item.img != null ? null : { display: "none" })}" data-v-93122bf5>`);
+        _push(`<div class="demo" style="${ssrRenderStyle(item.en_quotes !== "" && item.img != null ? null : { display: "none" })}" data-v-acdc5372>`);
         _push(ssrRenderComponent(_component_NuxtLink, {
           to: `/authors/${item.id}-quotes`
         }, {
           default: withCtx((_, _push2, _parent2, _scopeId) => {
             if (_push2) {
-              _push2(`<img${ssrRenderAttr("src", item.img)}${ssrRenderAttr("alt", `${item.name} ${item.surname}`)}${ssrRenderAttr("width", item.img_width)}${ssrRenderAttr("height", item.img_height)} data-v-93122bf5${_scopeId}><span style="${ssrRenderStyle({ "display": "block", "text-align": "center", "padding": ".2rem 0" })}" data-v-93122bf5${_scopeId}>${ssrInterpolate(item.name)} ${ssrInterpolate(item.surname)}</span>`);
+              _push2(`<img${ssrRenderAttr("src", item.img)}${ssrRenderAttr("alt", `${item.name} ${item.surname}`)}${ssrRenderAttr("width", item.img_width)}${ssrRenderAttr("height", item.img_height)} data-v-acdc5372${_scopeId}><span style="${ssrRenderStyle({ "display": "block", "text-align": "center", "padding": ".2rem 0" })}" data-v-acdc5372${_scopeId}>${ssrInterpolate(item.name)} ${ssrInterpolate(item.surname)}</span>`);
             } else {
               return [
                 createVNode("img", {
@@ -92,15 +92,15 @@ const _sfc_main = {
         }, _parent));
         _push(`</div>`);
       });
-      _push(`<!--]--></div></section><section class="section" data-v-93122bf5><h2 style="${ssrRenderStyle({ "font-size": "40px", "text-align": "center", "margin": "3rem 0 2rem 0" })}" data-v-93122bf5>Words</h2><div id="word-container" data-v-93122bf5><!--[-->`);
+      _push(`<!--]--></div></section><section class="section" data-v-acdc5372><h2 style="${ssrRenderStyle({ "font-size": "40px", "text-align": "center", "margin": "3rem 0 2rem 0" })}" data-v-acdc5372>Words</h2><div id="word-container" data-v-acdc5372><!--[-->`);
       ssrRenderList(unref(wordsData), (item) => {
-        _push(`<div class="demo" data-v-93122bf5>`);
+        _push(`<div class="demo" data-v-acdc5372>`);
         _push(ssrRenderComponent(_component_NuxtLink, {
           to: `/words/${item.id}`
         }, {
           default: withCtx((_, _push2, _parent2, _scopeId) => {
             if (_push2) {
-              _push2(`<span data-v-93122bf5${_scopeId}>${ssrInterpolate(item.word)}</span><p data-v-93122bf5${_scopeId}>${ssrInterpolate(item.en_meta_desc)}</p>`);
+              _push2(`<span data-v-acdc5372${_scopeId}>${ssrInterpolate(item.word)}</span><p data-v-acdc5372${_scopeId}>${ssrInterpolate(item.en_meta_desc)}</p>`);
             } else {
               return [
                 createVNode("span", null, toDisplayString(item.word), 1),
@@ -112,15 +112,15 @@ const _sfc_main = {
         }, _parent));
         _push(`</div>`);
       });
-      _push(`<!--]--></div></section><section class="section" data-v-93122bf5><h2 style="${ssrRenderStyle({ "font-size": "40px", "text-align": "center", "margin": "3rem 0 2rem 0" })}" data-v-93122bf5>Proverbs</h2><div id="preverbs-container" data-v-93122bf5><!--[-->`);
+      _push(`<!--]--></div></section><section class="section" data-v-acdc5372><h2 style="${ssrRenderStyle({ "font-size": "40px", "text-align": "center", "margin": "3rem 0 2rem 0" })}" data-v-acdc5372>Proverbs</h2><div id="preverbs-container" data-v-acdc5372><!--[-->`);
       ssrRenderList(unref(preverbsData), (item) => {
-        _push(`<div class="demo" data-v-93122bf5>`);
+        _push(`<div class="demo" data-v-acdc5372>`);
         _push(ssrRenderComponent(_component_NuxtLink, {
           to: `/preverbs/${item.id}`
         }, {
           default: withCtx((_, _push2, _parent2, _scopeId) => {
             if (_push2) {
-              _push2(`<span data-v-93122bf5${_scopeId}>${ssrInterpolate(item.preverb)}</span>`);
+              _push2(`<span data-v-acdc5372${_scopeId}>${ssrInterpolate(item.preverb)}</span>`);
             } else {
               return [
                 createVNode("span", null, toDisplayString(item.preverb), 1)
@@ -141,7 +141,7 @@ _sfc_main.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("pages/index.vue");
   return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-const index = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-93122bf5"]]);
+const index = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-acdc5372"]]);
 
 export { index as default };
-//# sourceMappingURL=index-DATG3K5A.mjs.map
+//# sourceMappingURL=index-B0Le-xVc.mjs.map

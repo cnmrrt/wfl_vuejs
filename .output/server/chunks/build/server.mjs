@@ -401,7 +401,7 @@ const _routes = [
   {
     name: "index",
     path: "/",
-    component: () => import('./index-DATG3K5A.mjs')
+    component: () => import('./index-B0Le-xVc.mjs')
   },
   {
     name: "words",

@@ -204,13 +204,6 @@ onMounted(async () => {
   text-align: center;
 }
 
-@media (min-width: 1200px) {
-  .demo,
-  .demo img {
-    width: 163px !important;
-  }
-}
-
 @media (max-width: 767px) {
   .home-container {
     max-width: 100%;

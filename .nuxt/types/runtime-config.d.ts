@@ -86,10 +86,6 @@ import { RuntimeConfig as UserRuntimeConfig, PublicRuntimeConfig as UserPublicRu
             route: string,
 
             defaults: {
-               changefreq: string,
-
-               priority: number,
-
                lastmod: string,
             },
 
