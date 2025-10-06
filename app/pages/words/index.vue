@@ -15,7 +15,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref } from 'vue'
 import { useFetch } from '#imports'
 import Navbar from '~/components/Navbar.vue'
 
@@ -25,7 +25,17 @@ const words = ref([])
 const { data: wordsData, pending, error } = await useFetch(
   'https://words-from-life-5cb26-default-rtdb.firebaseio.com/words.json'
 )
-words.value = wordsData.value || []
 
+if (wordsData.value) {
+  // Convert object to array (if Firebase returns an object)
+  const arr = Array.isArray(wordsData.value)
+    ? wordsData.value
+    : Object.entries(wordsData.value).map(([id, item]) => ({
+        id,
+        ...item
+      }))
 
+  // Sort alphabetically by 'word'
+  words.value = arr.sort((a, b) => a.word.localeCompare(b.word, 'en', { sensitivity: 'base' }))
+}
 </script>

@@ -622,7 +622,7 @@ const sources = [
             },
             {
                 "loc": "/words",
-                "lastmod": "2025-10-05T06:44:07.812Z"
+                "lastmod": "2025-10-06T14:55:13.549Z"
             },
             {
                 "loc": "/authors",
