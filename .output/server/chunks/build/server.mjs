@@ -411,7 +411,7 @@ const _routes = [
   {
     name: "words-slug",
     path: "/words/:slug()",
-    component: () => import('./_slug_-D1BVGde3.mjs')
+    component: () => import('./_slug_-Cd82Xaro.mjs')
   },
   {
     name: "authors",
@@ -431,7 +431,7 @@ const _routes = [
   {
     name: "preverbs-slug",
     path: "/preverbs/:slug()",
-    component: () => import('./_slug_-JEbPx02q.mjs')
+    component: () => import('./_slug_-Bfa1Ugeu.mjs')
   }
 ];
 const _wrapInTransition = (props, children) => {

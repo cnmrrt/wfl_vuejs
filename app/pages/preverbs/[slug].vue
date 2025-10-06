@@ -1,8 +1,8 @@
 <template>
   <Navbar />
 
-  <div v-if="preverb" class="word-detail-container">
-    <main class="word-detail-main">
+  <div v-if="preverb" class="preverb-detail-container">
+    <main class="preverb-detail-main">
       <h1>{{ preverb.preverb }}</h1>
 
       <div id="main-image" v-if="preverb.img">
@@ -14,14 +14,13 @@
         />
       </div>
 
-      <!-- renders immediately after SSR -->
-      <p v-html="preverb.content"></p>
+      <div v-html="preverb.content"></div>
       
     </main>
   </div>
 
   <div v-else class="error">
-    Word not found.
+    Proverb not found.
   </div>
 </template>
 
@@ -43,11 +42,11 @@ useHead(() => {
   return {
     title: `${preverb.value.preverb}`,
     meta: [
-      { name: 'description', content: preverb.value.en_meta_desc || '' },
-      { property: 'og:title', content: `${preverb.value.preverb}` },
-      { property: 'og:description', content: preverb.value.en_meta_desc || '' },
-      { property: 'og:image', content: preverb.value.img || '' },
-      { property: 'og:url', content: `https://wordsfromlife.com/words/${word.value.id}` }
+      // { name: 'description', content: preverb.value.en_meta_desc || '' },
+      // { property: 'og:title', content: `${preverb.value.preverb}` },
+      // { property: 'og:description', content: preverb.value.en_meta_desc || '' },
+      // { property: 'og:image', content: preverb.value.img || '' },
+      // { property: 'og:url', content: `https://wordsfromlife.com/words/${word.value.id}` }
     ],
     link: [
         {
@@ -66,16 +65,16 @@ useHead(() => {
   font-size: 1.2rem;
   color: #e74c3c;
 }
-.word-detail-container {
+.preverb-detail-container {
   max-width: 80%;
   margin: 0 auto;
   padding: 0;
 }
-.word-detail-main {
+.preverb-detail-main {
   max-width: 600px;
   margin: 0 auto;
 }
-.word-detail-main h1 {
+.preverb-detail-main h1 {
   text-align: center;
   margin-bottom: 2rem;
   color: #333;
@@ -91,7 +90,7 @@ useHead(() => {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
-.word-detail-main p {
+.preverb-detail-main p {
   line-height: 1.6;
   margin: 1rem 0;
 }

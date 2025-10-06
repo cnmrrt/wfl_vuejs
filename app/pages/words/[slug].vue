@@ -15,7 +15,7 @@
       </div>
 
       <!-- renders immediately after SSR -->
-      <p v-html="word.content"></p>
+      <div v-html="word.content"></div>
       
     </main>
   </div>

@@ -40,11 +40,11 @@ const _sfc_main = {
       return {
         title: `${preverb.value.preverb}`,
         meta: [
-          { name: "description", content: preverb.value.en_meta_desc || "" },
-          { property: "og:title", content: `${preverb.value.preverb}` },
-          { property: "og:description", content: preverb.value.en_meta_desc || "" },
-          { property: "og:image", content: preverb.value.img || "" },
-          { property: "og:url", content: `https://wordsfromlife.com/words/${word.value.id}` }
+          // { name: 'description', content: preverb.value.en_meta_desc || '' },
+          // { property: 'og:title', content: `${preverb.value.preverb}` },
+          // { property: 'og:description', content: preverb.value.en_meta_desc || '' },
+          // { property: 'og:image', content: preverb.value.img || '' },
+          // { property: 'og:url', content: `https://wordsfromlife.com/words/${word.value.id}` }
         ],
         link: [
           {
@@ -58,15 +58,15 @@ const _sfc_main = {
       _push(`<!--[-->`);
       _push(ssrRenderComponent(Navbar, null, null, _parent));
       if (unref(preverb)) {
-        _push(`<div class="word-detail-container" data-v-0927ac5f><main class="word-detail-main" data-v-0927ac5f><h1 data-v-0927ac5f>${ssrInterpolate(unref(preverb).preverb)}</h1>`);
+        _push(`<div class="preverb-detail-container" data-v-a812e8a8><main class="preverb-detail-main" data-v-a812e8a8><h1 data-v-a812e8a8>${ssrInterpolate(unref(preverb).preverb)}</h1>`);
         if (unref(preverb).img) {
-          _push(`<div id="main-image" data-v-0927ac5f><img${ssrRenderAttr("src", unref(preverb).img)}${ssrRenderAttr("alt", unref(preverb).preverb)}${ssrRenderAttr("width", unref(preverb).img_width)}${ssrRenderAttr("height", unref(preverb).img_height)} data-v-0927ac5f></div>`);
+          _push(`<div id="main-image" data-v-a812e8a8><img${ssrRenderAttr("src", unref(preverb).img)}${ssrRenderAttr("alt", unref(preverb).preverb)}${ssrRenderAttr("width", unref(preverb).img_width)}${ssrRenderAttr("height", unref(preverb).img_height)} data-v-a812e8a8></div>`);
         } else {
           _push(`<!---->`);
         }
-        _push(`<p data-v-0927ac5f>${unref(preverb).content ?? ""}</p></main></div>`);
+        _push(`<div data-v-a812e8a8>${unref(preverb).content ?? ""}</div></main></div>`);
       } else {
-        _push(`<div class="error" data-v-0927ac5f> Word not found. </div>`);
+        _push(`<div class="error" data-v-a812e8a8> Proverb not found. </div>`);
       }
       _push(`<!--]-->`);
     };
@@ -78,7 +78,7 @@ _sfc_main.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("pages/preverbs/[slug].vue");
   return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-const _slug_ = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-0927ac5f"]]);
+const _slug_ = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-a812e8a8"]]);
 
 export { _slug_ as default };
-//# sourceMappingURL=_slug_-JEbPx02q.mjs.map
+//# sourceMappingURL=_slug_-Bfa1Ugeu.mjs.map

@@ -378,7 +378,7 @@ const client_manifest = {
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "CJHURZPA.js",
+    "file": "CQjOGhLv.js",
     "name": "entry",
     "src": "../node_modules/nuxt/dist/app/entry.js",
     "isEntry": true,
@@ -567,7 +567,7 @@ const client_manifest = {
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "Bu0w1h7P.js",
+    "file": "CckLt-6J.js",
     "name": "_slug_",
     "src": "pages/preverbs/[slug].vue",
     "isDynamicEntry": true,
@@ -578,8 +578,8 @@ const client_manifest = {
     ],
     "css": []
   },
-  "_slug_.DI-TDwtN.css": {
-    "file": "_slug_.DI-TDwtN.css",
+  "_slug_.C_Z8_r_o.css": {
+    "file": "_slug_.C_Z8_r_o.css",
     "resourceType": "style",
     "prefetch": true,
     "preload": true
@@ -606,7 +606,7 @@ const client_manifest = {
     "module": true,
     "prefetch": true,
     "preload": true,
-    "file": "AdGs_cvP.js",
+    "file": "DniuyOMB.js",
     "name": "_slug_",
     "src": "pages/words/[slug].vue",
     "isDynamicEntry": true,
@@ -617,8 +617,8 @@ const client_manifest = {
     ],
     "css": []
   },
-  "_slug_.gBCXxS_X.css": {
-    "file": "_slug_.gBCXxS_X.css",
+  "_slug_.1r7fqxEU.css": {
+    "file": "_slug_.1r7fqxEU.css",
     "resourceType": "style",
     "prefetch": true,
     "preload": true

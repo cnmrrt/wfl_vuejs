@@ -58,15 +58,15 @@ const _sfc_main = {
       _push(`<!--[-->`);
       _push(ssrRenderComponent(Navbar, null, null, _parent));
       if (unref(word)) {
-        _push(`<div class="word-detail-container" data-v-36f060da><main class="word-detail-main" data-v-36f060da><h1 data-v-36f060da>${ssrInterpolate(unref(word).word)}</h1>`);
+        _push(`<div class="word-detail-container" data-v-97049a33><main class="word-detail-main" data-v-97049a33><h1 data-v-97049a33>${ssrInterpolate(unref(word).word)}</h1>`);
         if (unref(word).img) {
-          _push(`<div id="main-image" data-v-36f060da><img${ssrRenderAttr("src", unref(word).img)}${ssrRenderAttr("alt", unref(word).word)}${ssrRenderAttr("width", unref(word).img_width)}${ssrRenderAttr("height", unref(word).img_height)} data-v-36f060da></div>`);
+          _push(`<div id="main-image" data-v-97049a33><img${ssrRenderAttr("src", unref(word).img)}${ssrRenderAttr("alt", unref(word).word)}${ssrRenderAttr("width", unref(word).img_width)}${ssrRenderAttr("height", unref(word).img_height)} data-v-97049a33></div>`);
         } else {
           _push(`<!---->`);
         }
-        _push(`<p data-v-36f060da>${unref(word).content ?? ""}</p></main></div>`);
+        _push(`<div data-v-97049a33>${unref(word).content ?? ""}</div></main></div>`);
       } else {
-        _push(`<div class="error" data-v-36f060da> Word not found. </div>`);
+        _push(`<div class="error" data-v-97049a33> Word not found. </div>`);
       }
       _push(`<!--]-->`);
     };
@@ -78,7 +78,7 @@ _sfc_main.setup = (props, ctx) => {
   (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("pages/words/[slug].vue");
   return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
 };
-const _slug_ = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-36f060da"]]);
+const _slug_ = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-97049a33"]]);
 
 export { _slug_ as default };
-//# sourceMappingURL=_slug_-D1BVGde3.mjs.map
+//# sourceMappingURL=_slug_-Cd82Xaro.mjs.map
