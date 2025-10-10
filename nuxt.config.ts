@@ -33,7 +33,7 @@ export default defineNuxtConfig({
         { loc: '/words', priority: 0.8 },
         { loc: '/preverbs', priority: 0.8 },
         ...words.map((w: any) => ({ loc: `/words/${w.id}`, changefreq: 'weekly' })),
-        ...authors.map((a: any) => ({ loc: `/authors/${a.id}`, changefreq: 'monthly' })),
+        ...authors.map((a: any) => ({ loc: `/authors/${a.id}-quotes`, changefreq: 'monthly' })),
         ...proverbs.map((p: any) => ({ loc: `/preverbs/${p.id}`, changefreq: 'monthly' }))
       ]
     }
