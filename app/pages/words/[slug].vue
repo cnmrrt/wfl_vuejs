@@ -43,9 +43,10 @@ useHead(() => {
     title: `Meaning of ${word.value.word}`,
     meta: [
       { name: 'description', content: word.value.en_meta_desc || '' },
+      { property: 'og:type', content: `article` },
       { property: 'og:title', content: `Meaning of ${word.value.word}` },
       { property: 'og:description', content: word.value.en_meta_desc || '' },
-      { property: 'og:image', content: word.value.img || '' },
+      { property: 'og:image', content: `https://wordsfromlife.com/words/${word.value.img}` || '' },
       { property: 'og:url', content: `https://wordsfromlife.com/words/${word.value.id}` }
     ],
     link: [
