@@ -13,11 +13,15 @@
             class="demo"
           >
             <NuxtLink :to="`/authors/${item.id}-quotes`">
+              <!--<img
+                :src="item.img"
+                :alt="`${item.name} ${item.surname}`"
+                :width="item.img_width"
+                :height="item.img_height"
+              />-->
               <img
                 :src="item.img"
                 :alt="`${item.name} ${item.surname}`"
-                /*:width="item.img_width"
-                :height="item.img_height"*/
               />
               <span style="display: block; text-align: center; padding: .2rem 0">
                 {{ item.name }} {{ item.surname }}
