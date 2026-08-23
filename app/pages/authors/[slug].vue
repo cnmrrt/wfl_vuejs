@@ -6,26 +6,123 @@
   </div>
 
   <div v-else-if="authorData" class="author-detail-container">
-    <style scoped> .error { text-align: center; padding: 2rem; color: #e74c3c; } .author-detail-container { max-width: 80%; margin: 0 auto; padding: 2rem 1rem; } .author-detail-main { max-width: 600px; margin: 0 auto; } .author-detail-main h1 { text-align: center; margin-bottom: 2rem; color: #333; } #main-image { display: flex; justify-content: center; margin: 2rem 0; } #main-image img { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); } #quotes { list-style: none; padding: 0; margin: 2rem 0; } #quotes li { border: 1px solid #e5e5e5; padding: 1.5rem; margin: 1rem 0; border-radius: 8px; background: #f9f9f9; font-style: italic; line-height: 1.6; position: relative; } #quotes li::before { content: '"'; font-size: 3rem; color: #ccc; position: absolute; top: -10px; left: 10px; font-family: serif; } #quotes li::after { content: '"'; font-size: 3rem; color: #ccc; position: absolute; bottom: -20px; right: 10px; font-family: serif; } .author-detail-main span { display: block; text-align: center; margin-top: 2rem; color: #666; font-size: 1.1rem; } @media (max-width: 768px) { .author-detail-container { max-width: 95%; padding: 1rem 0.5rem; } .author-detail-main h1 { font-size: 1.8rem; } #quotes li { padding: 1rem; margin: 0.5rem 0; } #quotes li::before, #quotes li::after { font-size: 2rem; } } </style>
+    <style scoped>
+      .error {
+        text-align: center;
+        padding: 2rem;
+        color: #e74c3c;
+      }
+
+      .author-detail-container {
+        max-width: 80%;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+      }
+
+      .author-detail-main {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .author-detail-main h1 {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: #333;
+      }
+
+      #main-image {
+        display: flex;
+        justify-content: center;
+        margin: 2rem 0;
+      }
+
+      #main-image img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      #quotes {
+        list-style: none;
+        padding: 0;
+        margin: 2rem 0;
+      }
+
+      #quotes li {
+        border: 1px solid #e5e5e5;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        border-radius: 8px;
+        background: #f9f9f9;
+        font-style: italic;
+        line-height: 1.6;
+        position: relative;
+      }
+
+      #quotes li::before {
+        content: '"';
+        font-size: 3rem;
+        color: #ccc;
+        position: absolute;
+        top: -10px;
+        left: 10px;
+        font-family: serif;
+      }
+
+      #quotes li::after {
+        content: '"';
+        font-size: 3rem;
+        color: #ccc;
+        position: absolute;
+        bottom: -20px;
+        right: 10px;
+        font-family: serif;
+      }
+
+      .author-detail-main span {
+        display: block;
+        text-align: center;
+        margin-top: 2rem;
+        color: #666;
+        font-size: 1.1rem;
+      }
+
+      @media (max-width: 768px) {
+        .author-detail-container {
+          max-width: 95%;
+          padding: 1rem 0.5rem;
+        }
+
+        .author-detail-main h1 {
+          font-size: 1.8rem;
+        }
+
+        #quotes li {
+          padding: 1rem;
+          margin: 0.5rem 0;
+        }
+
+        #quotes li::before,
+        #quotes li::after {
+          font-size: 2rem;
+        }
+      }
+    </style>
     <main class="author-detail-main">
       <h1>{{ authorData.name }} {{ authorData.surname }} Quotes</h1>
 
       <div id="main-image">
-        <img
-          :src="authorData.img"
-          :alt="`${authorData.name} ${authorData.surname}`"
-          :width="authorData.img_width"
-          :height="authorData.img_height"
-        />
+        <img :src="authorData.img" :alt="`${authorData.name} ${authorData.surname}`" :width="authorData.img_width"
+          :height="authorData.img_height" />
       </div>
-      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5581015881313741" crossorigin="anonymous"></script> <ins class="adsbygoogle" style="display:inline-block;width:728px;height:90px" data-ad-client="ca-pub-5581015881313741" data-ad-slot="1945579971"></ins> <script> (adsbygoogle = window.adsbygoogle || []).push({}); </script>
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5581015881313741"
+        crossorigin="anonymous"></script> <ins class="adsbygoogle" style="display:inline-block;height:90px"
+        data-ad-client="ca-pub-5581015881313741" data-ad-slot="1945579971"></ins>
+      <script> (adsbygoogle = window.adsbygoogle || []).push({}); </script>
 
       <ul id="quotes">
-        <li
-          v-for="(quote, index) in authorData.en_quotes"
-          :key="index"
-          v-html="quote"
-        ></li>
+        <li v-for="(quote, index) in authorData.en_quotes" :key="index" v-html="quote"></li>
       </ul>
 
       <span style="display: block; text-align: center">
@@ -69,11 +166,11 @@ if (authorData.value) {
       { property: 'og:image', content: authorData.value.img }
     ],
     link: [
-        {
-          rel: 'canonical',
-          href: `https://wordsfromlife.com/authors/${authorData.value.id}-quotes`
-        }
-      ]
+      {
+        rel: 'canonical',
+        href: `https://wordsfromlife.com/authors/${authorData.value.id}-quotes`
+      }
+    ]
   })
 }
 
@@ -108,5 +205,3 @@ onMounted(() => {
   }
 })
 </script>
-
-
