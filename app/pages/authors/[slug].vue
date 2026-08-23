@@ -49,7 +49,7 @@ const macyRef = ref(null)
 
 // Fetch author data server-side
 const { data: authorData, error } = await useAsyncData(`author-${slug}`, async () => {
-  const res = await fetch('https://words-from-life-5cb26-default-rtdb.firebaseio.com/quotes/authors-new.json')
+  const res = await fetch('https://wordsfromlife.com/static/data/author-quotes.json')
   if (!res.ok) throw new Error('Failed to fetch authors')
   const allAuthors = await res.json()
   const author = allAuthors.find(a => `${a.id}-quotes`.toLowerCase() === slug.toLowerCase())

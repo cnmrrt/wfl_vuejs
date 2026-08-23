@@ -47,7 +47,7 @@ useHead({
 const authorsData = ref([])
 
 // Fetch authors with SSR-friendly useFetch
-const { data: authors } = await useFetch('https://words-from-life-5cb26-default-rtdb.firebaseio.com/quotes/authors-new.json')
+const { data: authors } = await useFetch('https://wordsfromlife.com/static/data/author-quotes.json')
 authorsData.value = authors.value || []
 
 // Initialize Masonry only on client
