@@ -93,7 +93,7 @@ const { data: authorsData } = await useAsyncData('authors', () =>
 )
 
 const { data: wordsData } = await useAsyncData('words', () =>
-  $fetch('https://words-from-life-5cb26-default-rtdb.firebaseio.com/words.json')
+  $fetch('https://wordsfromlife.com/static/data/words.json')
 )
 
 const { data: preverbsData } = await useAsyncData('preverbs', () =>

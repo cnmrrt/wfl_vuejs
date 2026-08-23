@@ -33,7 +33,7 @@ const route = useRoute()
 const slug = route.params.slug
 
 const { data: word } = await useAsyncData(`word-${slug}`, async () => {
-  const res = await $fetch('https://words-from-life-5cb26-default-rtdb.firebaseio.com/words.json')
+  const res = await $fetch('https://wordsfromlife.com/static/data/words.json')
   return res.find(item => item.id?.toLowerCase() === slug.toLowerCase())
 })
 

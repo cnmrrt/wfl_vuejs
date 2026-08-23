@@ -23,7 +23,7 @@ const words = ref([])
 
 // Fetch words data (SSR-friendly)
 const { data: wordsData, pending, error } = await useFetch(
-  'https://words-from-life-5cb26-default-rtdb.firebaseio.com/words.json'
+  'https://wordsfromlife.com/static/data/words.json'
 )
 
 if (wordsData.value) {
