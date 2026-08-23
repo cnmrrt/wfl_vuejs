@@ -89,7 +89,7 @@ useHead(() => {
 // Fetch data on SSR
 // -------------------
 const { data: authorsData } = await useAsyncData('authors', () =>
-  $fetch('https://words-from-life-5cb26-default-rtdb.firebaseio.com/quotes/authors-new.json')
+  $fetch('https://wordsfromlife.com/static/data/author-quotes.json')
 )
 
 const { data: wordsData } = await useAsyncData('words', () =>
