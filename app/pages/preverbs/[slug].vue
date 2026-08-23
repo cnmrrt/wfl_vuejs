@@ -33,7 +33,7 @@ const slug = route.params.slug
 
 // ✅ asyncData = loads before render (SSR + SSG)
 const { data: preverb } = await useAsyncData(`preverb-${slug}`, async () => {
-  const res = await $fetch('https://words-from-life-5cb26-default-rtdb.firebaseio.com/idioms%20and%20proverbs/en/preverbs.json')
+  const res = await $fetch('https://wordsfromlife.com/static/data/preverbs.json')
   return res.find(item => item.id?.toLowerCase() === slug.toLowerCase())
 })
 

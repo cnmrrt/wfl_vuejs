@@ -23,7 +23,7 @@ const words = ref([])
 
 // Fetch words data (SSR-friendly)
 const { data: wordsData, pending, error } = await useFetch(
-  'https://words-from-life-5cb26-default-rtdb.firebaseio.com/idioms%20and%20proverbs/en/preverbs.json'
+  'https://wordsfromlife.com/static/data/preverbs.json'
 )
 words.value = wordsData.value || []
 

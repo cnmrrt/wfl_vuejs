@@ -97,7 +97,7 @@ const { data: wordsData } = await useAsyncData('words', () =>
 )
 
 const { data: preverbsData } = await useAsyncData('preverbs', () =>
-  $fetch('https://words-from-life-5cb26-default-rtdb.firebaseio.com/idioms%20and%20proverbs/en/preverbs.json')
+  $fetch('https://wordsfromlife.com/static/data/preverbs.json')
 )
 
 let macyRef = ref(null)
