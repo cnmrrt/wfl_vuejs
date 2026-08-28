@@ -18,13 +18,13 @@ export default defineNuxtConfig({
     // Custom URL generator
     urls: async () => {
       // Example: fetch words and authors from your API
-      const words = await fetch('https://words-from-life-5cb26-default-rtdb.firebaseio.com/words.json')
+      const words = await fetch('https://wordsfromlife.com/static/data/words.json')
         .then(res => res.json())
 
-      const authors = await fetch('https://words-from-life-5cb26-default-rtdb.firebaseio.com/quotes/authors-new.json')
+      const authors = await fetch('https://wordsfromlife.com/static/data/author-quotes.json')
         .then(res => res.json())
 
-      const proverbs = await fetch('https://words-from-life-5cb26-default-rtdb.firebaseio.com/idioms%20and%20proverbs/en/preverbs.json')
+      const proverbs = await fetch('https://wordsfromlife.com/static/data/preverbs.json')
         .then(res => res.json())
       return [
         { loc: '/', priority: 1.0 },
